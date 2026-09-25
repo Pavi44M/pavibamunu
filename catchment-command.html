@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Pavithra Bamunu">
+<meta name="description" content="Catchment Command — analytics dashboard for the Auckland catchment mission-fit model.">
+<style>
+:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Catchment Command</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+/* Single visual world by choice: a dark analysis console.
+   Every colour is painted explicitly so the page holds on any host ground. */
+:root{
+  --void:#070b12; --panel:#0f1622; --panel-2:#141e2c; --raise:#1a2534;
+  --rule:#233042; --rule-soft:#192332;
+  --ink:#e8eef4; --ink-2:#93a6b8; --ink-3:#5d7186;
+  --copper:#e5894a; --mint:#5ad3a4; --grid:rgba(124,176,232,.05);
+  /* categorical: validated adjacent-pairlist, dark surface */
+  --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181;
+}
+*{box-sizing:border-box}
+html,body{background:var(--void)}
+body{
+  margin:0;padding-block:0 56px;padding-inline:16px;
+  color:var(--ink);font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.5;
+  background-color:var(--void);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:46px 46px;-webkit-font-smoothing:antialiased;
+}
+.shell{max-width:1180px;margin:0 auto}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.lbl{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+
+/* rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:flex;flex-wrap:wrap;
+  gap:6px 18px;align-items:center;padding:10px 14px;margin:0 -16px 20px;
+  background:rgba(7,11,18,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule);
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase}
+.rail b{color:var(--mint);font-weight:500}
+.rail .sep{color:var(--rule)}
+.rail a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.rail a:hover,.rail a:focus-visible{color:var(--ink);border-bottom-color:var(--copper);outline:none}
+
+header.top{padding-block:4px 26px}
+h1{font-size:clamp(32px,7vw,66px);font-weight:800;letter-spacing:-.035em;line-height:.94;
+  margin:0 0 14px;text-transform:uppercase;text-wrap:balance}
+h1 .thin{color:var(--ink-3);font-weight:400}
+.stand{max-width:66ch;color:var(--ink-2);font-size:clamp(14.5px,2.2vw,17px);border-left:2px solid var(--copper);padding-left:14px}
+.stand b{color:var(--ink);font-weight:600}
+
+/* kpi strip */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.kpi{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--rule);
+  border-radius:4px;padding:14px 14px 12px}
+.kpi .n{font-family:"JetBrains Mono",monospace;font-size:clamp(20px,3.6vw,30px);font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--ink)}
+.kpi .k{margin-top:5px;font-size:11.5px;color:var(--ink-3);line-height:1.35}
+
+section.card{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--rule);
+  border-radius:4px;padding:18px 16px;margin-bottom:14px;position:relative}
+section.card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--copper);opacity:.5}
+.card-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+h2{font-size:15px;font-weight:600;margin:0;letter-spacing:.01em;text-transform:uppercase}
+.sub{font-size:13px;color:var(--ink-3);max-width:70ch;margin:6px 0 0;line-height:1.5}
+
+/* controls */
+.ctrls{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 12px}
+.chip{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--raise);border:1px solid var(--rule);color:var(--ink-2);border-radius:3px;
+  padding:6px 10px;cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--copper);border-color:var(--copper);color:#140c05;font-weight:700}
+.chip:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+
+/* map */
+.mapwrap{position:relative;background:var(--void);border:1px solid var(--rule-soft);border-radius:3px;overflow:hidden}
+svg.map{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:12px;
+  font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-2)}
+.legend .sw{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+.ramp{display:flex;align-items:center;gap:8px}
+.ramp .bar{display:flex;height:10px;width:150px;border-radius:2px;overflow:hidden}
+.ramp .bar span{flex:1}
+
+/* facets */
+.facets{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:6px}
+.facet{background:var(--void);border:1px solid var(--rule-soft);border-radius:3px;padding:8px 8px 6px}
+.facet h3{margin:0 0 2px;font-size:10.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;line-height:1.25}
+.facet .fm{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);margin-bottom:5px}
+
+/* bars */
+.profile{display:grid;gap:16px;margin-top:14px}
+.feat h3{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.brow{display:grid;grid-template-columns:minmax(96px,186px) 1fr 58px;gap:10px;align-items:center;margin-bottom:5px}
+.bname{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btrack{height:14px;background:var(--rule-soft);border-radius:2px;position:relative;overflow:hidden}
+.bfill{position:absolute;inset:0 auto 0 0;border-radius:2px 4px 4px 2px}
+.bval{font-family:"JetBrains Mono",monospace;font-size:11.5px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* matrix */
+.matwrap{overflow-x:auto;margin-top:14px}
+table{border-collapse:separate;border-spacing:3px;width:100%;min-width:520px}
+th,td{padding:0;text-align:left}
+thead th{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);padding:0 0 6px 4px;font-weight:400}
+tbody th{font-size:11.5px;font-weight:600;color:var(--ink-2);padding-right:10px;white-space:nowrap;
+  max-width:170px;overflow:hidden;text-overflow:ellipsis}
+td.cell{border-radius:3px;text-align:center;font-family:"JetBrains Mono",monospace;font-size:12.5px;
+  font-weight:500;padding:11px 6px;font-variant-numeric:tabular-nums}
+
+/* shortlist */
+.listwrap{overflow-x:auto;margin-top:12px;border:1px solid var(--rule-soft);border-radius:3px}
+table.list{border-spacing:0;min-width:620px}
+table.list th{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);padding:9px 12px;border-bottom:1px solid var(--rule);cursor:pointer;user-select:none;white-space:nowrap}
+table.list th:hover{color:var(--ink)}
+table.list th[aria-sort]{color:var(--copper)}
+table.list td{padding:8px 12px;border-bottom:1px solid var(--rule-soft);font-size:13px;white-space:nowrap}
+table.list tr:last-child td{border-bottom:0}
+table.list tr:hover td{background:var(--raise)}
+td.n{text-align:right;font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+td.closer{color:var(--copper);font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.pill i{width:8px;height:8px;border-radius:2px}
+
+/* sensitivity */
+.sens{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;margin-top:14px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+input[type=range]{flex:1;accent-color:var(--copper);height:22px}
+.rate{font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:700;color:var(--copper);
+  min-width:78px;text-align:right;letter-spacing:-.03em}
+.flow{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:baseline;
+  padding:10px 12px;background:var(--void);border:1px solid var(--rule-soft);border-radius:3px}
+.step .sl{font-size:12.5px;color:var(--ink-2)}
+.step .sv{font-family:"JetBrains Mono",monospace;font-size:16px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.step.final{border-color:var(--copper);background:rgba(229,137,74,.07)}
+.step.final .sv{color:var(--copper)}
+.compare{margin-top:16px;padding:14px;border:1px dashed var(--rule);border-radius:3px}
+.compare .big{font-family:"JetBrains Mono",monospace;font-size:clamp(26px,5vw,40px);font-weight:700;
+  color:var(--mint);letter-spacing:-.03em;line-height:1}
+
+/* tooltip */
+#tip{position:fixed;z-index:60;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:rgba(10,15,24,.97);border:1px solid var(--rule);border-radius:3px;padding:9px 11px;
+  font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.55;color:var(--ink);
+  max-width:250px;box-shadow:0 8px 28px rgba(0,0,0,.6)}
+#tip b{color:var(--copper);font-weight:700;display:block;margin-bottom:3px;font-size:11.5px}
+#tip em{color:var(--ink-3);font-style:normal}
+
+.foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--rule-soft);
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+
+@media (max-width:860px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .facets{grid-template-columns:repeat(2,1fr)}
+  .sens{grid-template-columns:1fr}
+  .brow{grid-template-columns:82px 1fr 52px;gap:8px}
+}
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <div class="rail">
+    <span><b>CATCHMENT MODEL</b> v1.0</span>
+    <span class="sep">/</span>
+    <span>606 SA2 · AUCKLAND</span>
+    <span class="sep">/</span>
+    <span>PUBLIC DATA ONLY</span>
+    <span class="sep">/</span>
+    <a href="#map">Map</a><a href="#profile">Profile</a><a href="#matrix">Distance</a><a href="#gaps">Gaps</a><a href="#sens">Sensitivity</a>
+  </div>
+
+  <header class="top">
+    <h1>Catchment<br><span class="thin">Command</span></h1>
+    <p class="stand">Auckland grocery catchments segmented by the shopper mission their household composition implies, overlaid on the public store network. <b>22 catchments show a format-to-mission mismatch.</b> The sharpest: eight inner-city areas where half of households have no car and a competitor sits closer than any Foodstuffs banner.</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">606</div><div class="k">catchments analysed</div></div>
+    <div class="kpi"><div class="n">516,585</div><div class="k">households covered</div></div>
+    <div class="kpi"><div class="n">22</div><div class="k">flagged for mismatch</div></div>
+    <div class="kpi"><div class="n">18,771</div><div class="k">households in flagged areas</div></div>
+  </div>
+
+  <section class="card" id="map">
+    <div class="card-head"><h2>Catchment map</h2><span class="lbl" id="map-stat">606 shown</span></div>
+    <p class="sub">Every catchment placed by centroid, shaded by the measure you pick. Stores overlay by banner — shape carries the banner, not colour alone. Hover any mark.</p>
+    <div class="ctrls" id="measure-ctrls" role="group" aria-label="Map measure"></div>
+    <div class="mapwrap">
+      <svg class="map" id="svg-map" viewBox="0 0 900 640" role="img" aria-label="Auckland catchments shaded by the selected measure, with grocery stores overlaid"></svg>
+    </div>
+    <div class="legend">
+      <span class="ramp"><span class="lbl" id="ramp-lo">low</span>
+        <span class="bar" id="ramp-bar" title="equal-count bins"></span>
+        <span class="lbl" id="ramp-hi">high</span>
+        <span class="lbl" style="color:var(--ink-3)">· equal-count bins</span></span>
+      <span class="sw"><svg width="13" height="13" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" fill="#e5894a"/></svg> Four Square</span>
+      <span class="sw"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="6,1.5 10.5,10 1.5,10" fill="#5ad3a4"/></svg> New World</span>
+      <span class="sw"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="#c98500"/></svg> Pak'nSave</span>
+      <span class="sw"><svg width="13" height="13" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="#93a6b8" stroke-width="1.6"/></svg> Woolworths (competitor)</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Where each archetype lives</h2><span class="lbl">five panels, one series each</span></div>
+    <p class="sub">Five hues on one scatter cannot be told apart reliably — by anyone, colour-blind or not. So the segments are faceted instead of stacked on the map above. Each panel shows one archetype against the same outline.</p>
+    <div class="facets" id="facets"></div>
+  </section>
+
+  <section class="card" id="profile">
+    <div class="card-head"><h2>Segment profile</h2><span class="lbl">census 2023</span></div>
+    <p class="sub">The seven features the segmentation is built on. Household structure separates these groups; income does the least work of any feature.</p>
+    <div class="profile" id="profile-body"></div>
+  </section>
+
+  <section class="card" id="matrix">
+    <div class="card-head"><h2>Distance to nearest store</h2><span class="lbl">median km, straight line</span></div>
+    <p class="sub">Read across a row: what each archetype actually has within reach. The inner-city row is the finding — a Woolworths at 0.57 km against a Four Square at 1.05 km, for households that mostly cannot drive.</p>
+    <div class="matwrap" id="matrix-body"></div>
+  </section>
+
+  <section class="card" id="gaps">
+    <div class="card-head"><h2>The 22 flagged catchments</h2><span class="lbl">click a column to sort</span></div>
+    <p class="sub">Thresholds are judgment, set against each archetype's mobility profile: inner-city over 1 km to a convenience format, town-centre over 2 km to any Foodstuffs banner. Stated so they can be challenged and re-run.</p>
+    <div class="listwrap"><table class="list" id="gap-table"></table></div>
+  </section>
+
+  <section class="card" id="sens">
+    <div class="card-head"><h2>Commercial sensitivity</h2><span class="lbl">illustrative — not a forecast</span></div>
+    <p class="sub">$171.6m of annual grocery spend sits in the flagged catchments. Drag the recapture rate to see what it is worth to the co-operative, at the 85% wholesale ratio and the 3.17% EBIT margin derived from FSNI's published FY24 accounts.</p>
+    <div class="sens">
+      <div>
+        <div class="slider-row">
+          <span class="lbl">recapture</span>
+          <input id="rate" type="range" min="1" max="30" step="1" value="10" aria-label="Recapture rate, percent">
+          <span class="rate" id="rate-v">10%</span>
+        </div>
+        <div class="flow">
+          <div class="step"><span class="sl">Addressable grocery spend</span><span class="sv">$171.6m</span></div>
+          <div class="step"><span class="sl">Recaptured retail turnover</span><span class="sv" id="s-retail">—</span></div>
+          <div class="step"><span class="sl">Reaching FSNI (× 85% wholesale)</span><span class="sv" id="s-rev">—</span></div>
+          <div class="step final"><span class="sl">EBIT at 3.17% margin</span><span class="sv" id="s-ebit">—</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="step"><span class="sl">Share of FSNI's $292m EBIT</span><span class="sv" id="s-share">—</span></div>
+        <div class="compare">
+          <span class="lbl">the point this dashboard exists to make</span>
+          <div class="big" id="s-mult">—</div>
+          <p class="sub" style="margin-top:8px">Improving the allocation of FSNI's <b style="color:var(--ink)">$254m annual capex</b> by 5% is worth about <b style="color:var(--ink)">$12.7m</b> — that many times the recapture opportunity at this rate. The catchment gaps are not the prize. They are the evidence the method works.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span>Stats NZ Census 2023 · HES YE Jun 2023 · OpenStreetMap (ODbL) · FSNI FY24 accounts</span>
+    <span>No Foodstuffs or member-store data used</span>
+  </div>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script id="payload" type="application/json">{"seg":["Inner-city apartments","Town-centre mixed","South Auckland multi-family","Suburban mainstream","Rural fringe"],"c":[["Waiheke East",4,432,-36.8278,175.1514,28.5,2.8,2.2,4.4,90600,4.3,4.9,7.49,21.89,23.2,10.05],["Kingseat-Karaka",4,930,-37.0923,174.8631,13.5,6.5,3.0,2.4,142900,4.5,10.7,7.91,7.58,6.65,7.45],["Tawharanui Peninsula",4,810,-36.366,174.767,21.1,1.9,2.4,0.4,96400,2.3,17.3,4.77,9.71,10.94,9.97],["Ardmore",4,390,-37.0553,174.9865,15.4,5.4,3.0,0.0,129800,4.7,8.8,10.33,4.18,4.97,3.85],["Auckland Airport",4,108,-36.9861,174.771,22.2,11.1,3.7,3.1,112700,27.0,4.7,7.55,7.37,3.03,2.04],["Sandspit",4,369,-36.3991,174.7107,17.9,2.4,2.4,0.0,96900,0.8,16.6,2.5,3.92,5.54,4.19],["P\u0101remoremo East",4,771,-36.7558,174.6566,12.5,4.3,3.0,0.8,134300,3.9,53.7,5.08,4.92,5.32,4.71],["Whenuapai",3,1641,-36.7843,174.6277,11.9,3.7,2.9,1.1,142100,3.5,128.7,6.04,2.25,4.36,2.33],["P\u0101remoremo West",4,297,-36.7611,174.6177,15.2,7.1,3.0,0.0,141500,3.0,31.3,5.71,4.86,6.63,4.86],["Oneroa West",1,555,-36.7849,174.9996,34.1,1.1,2.1,6.6,87100,4.9,65.9,0.95,14.79,15.15,4.32],["Te Puru",3,1500,-36.9015,175.0012,10.6,3.6,3.0,0.4,163600,0.8,205.6,5.52,6.8,8.4,1.53],["Army Bay",4,531,-36.6055,174.8212,18.1,4.5,2.7,1.7,104600,2.3,85.4,2.83,8.32,13.31,7.53],["Titirangi South",3,1359,-36.9497,174.6568,17.2,2.9,2.7,2.0,142000,2.2,286.9,4.32,2.88,7.7,4.49],["Piha",1,381,-36.9571,174.4692,28.3,2.4,2.4,0.8,99500,4.9,72.7,16.54,18.92,17.04,16.84],["Helensville",1,1137,-36.675,174.4526,23.0,2.6,2.7,4.7,97300,3.4,280.6,2.27,14.32,20.67,0.27],["Laingholm",3,801,-36.9667,174.6331,18.0,3.7,2.8,1.2,130800,1.9,196.4,6.4,5.7,9.94,6.9],["Ostend",1,729,-36.7964,175.0493,32.1,2.9,2.3,8.0,74900,6.6,186.3,2.75,16.29,17.07,0.3],["Hingaia",3,939,-37.0716,174.9081,22.0,5.1,2.7,4.3,110800,1.3,259.6,6.81,3.02,2.83,3.16],["M\u0101ngere Bridge Ambury",3,1116,-36.9467,174.7664,16.9,5.1,3.1,3.1,124700,9.6,355.4,3.48,5.1,3.63,3.07],["Hamilton Estate",1,906,-37.2426,174.737,25.2,4.3,2.7,3.5,93900,5.0,401.0,10.17,1.1,15.02,15.42],["Greenhithe West",3,1101,-36.7718,174.6693,9.5,7.1,3.2,1.1,171900,1.9,404.6,3.03,3.73,5.73,3.45],["Surfdale",1,756,-36.8018,175.0293,24.2,2.8,2.4,5.8,92100,6.8,289.3,2.75,14.66,15.37,1.61],["One Tree Hill Amaru",1,894,-36.9045,174.7871,23.8,2.3,2.5,5.6,123400,6.0,402.5,1.62,2.68,1.31,1.78],["Campbells Bay",3,945,-36.7481,174.7593,13.3,3.8,3.0,1.3,172200,1.9,542.0,5.95,2.72,3.68,1.13],["Ormiston North",2,549,-36.9632,174.9179,7.1,14.8,3.8,2.3,151100,6.6,328.5,1.4,0.57,0.32,3.72],["Orewa West",3,240,-36.5791,174.6722,8.8,6.2,3.3,0.0,172000,2.6,159.8,3.8,2.09,4.56,2.29],["Parakai",1,327,-36.6582,174.4394,30.3,5.5,2.7,7.1,82300,7.3,224.8,0.63,16.51,21.35,2.36],["M\u0101ngere Central",2,690,-36.9715,174.8004,9.1,17.4,4.4,6.9,105000,33.6,477.5,6.0,4.81,0.46,0.13],["Waimauku",3,405,-36.7672,174.4912,10.4,5.2,3.1,0.8,154900,3.0,280.3,5.89,5.69,12.02,10.6],["Epsom East",3,978,-36.8953,174.7771,21.8,3.7,2.6,6.5,128400,7.5,771.2,2.71,2.36,1.67,1.61],["Te Atat\u016b South-North",3,1014,-36.862,174.6503,16.6,6.8,3.0,4.6,112400,8.3,929.6,3.24,2.15,2.04,0.54],["Saint Heliers South",3,1440,-36.8649,174.8516,22.3,2.1,2.7,5.3,149600,2.9,1178.3,1.66,2.05,1.25,1.62],["Howick West",3,1272,-36.8917,174.9224,13.4,6.6,3.1,3.4,124200,5.4,1065.7,2.04,1.38,1.62,1.03],["Saint Heliers West",3,1353,-36.8571,174.8503,18.4,1.8,2.7,2.2,164500,2.7,1141.1,0.96,1.94,2.13,2.5],["Henderson East",1,1413,-36.8888,174.6381,18.5,6.8,3.0,8.9,96500,11.3,1193.8,2.74,4.88,1.4,1.07],["Mount Roskill South",3,993,-36.924,174.7314,21.1,9.4,3.0,7.8,116300,6.9,879.0,4.77,1.73,4.12,0.76],["Te Atat\u016b Peninsula Central",3,1182,-36.8363,174.6519,21.6,4.3,2.9,6.1,117900,9.3,1061.6,4.56,0.71,3.2,2.95],["Unsworth Heights East",1,1296,-36.7575,174.718,21.3,4.6,2.7,4.0,102500,5.4,1169.3,4.12,3.31,3.22,1.95],["Epsom Central-North",3,1098,-36.8877,174.7687,17.8,5.5,3.0,6.4,119000,7.4,992.9,2.54,1.93,2.54,1.87],["Glen Eden Konini",3,894,-36.9261,174.6423,15.4,5.0,3.1,2.8,122500,5.7,822.1,1.87,3.32,5.5,2.64],["Twin Parks Rise",2,633,-37.0518,174.9699,4.7,16.6,3.9,0.5,162900,9.7,679.2,8.95,2.93,3.5,2.64],["Forrest Hill East",3,1152,-36.7642,174.7525,15.4,4.9,3.0,3.7,133200,4.4,1246.1,5.86,1.42,1.8,1.27],["Mission Heights South",2,864,-36.9648,174.9313,5.6,18.8,4.2,1.8,156900,7.7,993.5,2.58,1.74,1.45,4.25],["Hillcrest West (Auckland)",3,1050,-36.7962,174.7291,12.6,6.3,3.0,2.3,138500,5.1,1185.5,3.13,2.29,2.34,1.49],["Pukekohe North West",1,873,-37.1952,174.8989,25.1,6.5,3.1,10.2,77600,16.0,991.5,6.29,0.77,1.12,0.57],["Fruitvale",1,1041,-36.9149,174.6645,21.6,5.8,2.9,6.7,99300,9.0,1221.7,1.23,1.92,4.45,0.6],["Newmarket",1,1011,-36.869,174.7757,24.3,2.1,2.4,18.0,104700,13.7,1187.8,1.45,0.41,4.57,0.22],["Mount Roskill Central East",3,1074,-36.9203,174.7484,15.6,7.3,3.2,3.5,133200,9.2,1276.2,3.22,1.8,2.56,1.51],["Massey Road North",2,801,-36.9643,174.832,16.5,14.2,3.7,8.7,102000,26.9,953.3,6.27,2.6,3.16,0.72],["Waiuku East",3,594,-37.2583,174.7347,18.7,5.1,2.9,3.2,101700,4.0,713.4,11.44,1.1,15.77,16.23],["Sunnynook South",3,831,-36.7536,174.7361,14.1,5.1,3.0,5.9,115100,8.7,1036.7,5.43,3.29,2.89,0.69],["Rosa Birch Park",1,777,-37.2071,174.8958,35.1,2.7,2.4,8.3,78500,5.8,981.0,6.33,2.08,0.39,1.01],["Chapel Downs",2,852,-36.9727,174.9018,7.4,10.2,3.7,4.2,113900,19.5,1120.9,0.84,1.26,1.46,2.21],["Clover Park South",2,789,-36.9866,174.8932,11.0,12.2,3.7,6.1,103300,19.3,1062.7,1.3,2.95,1.12,0.81],["Wynyard-Viaduct",1,687,-36.842,174.7579,43.7,0.4,1.7,19.3,140000,3.1,1144.0,0.92,0.86,7.11,0.21],["Three Kings North",1,585,-36.9045,174.757,24.6,2.1,2.5,5.8,129900,5.6,867.6,2.93,2.07,1.66,0.41],["Hillpark North",2,669,-37.0112,174.899,14.8,13.0,3.5,4.2,131700,15.2,1014.1,1.48,1.25,3.05,2.58],["Papatoetoe South",2,891,-36.9774,174.8686,12.8,11.8,3.5,6.5,114000,19.1,1370.4,3.27,1.39,1.59,1.03],["Savonna",3,690,-36.9516,174.9113,4.8,11.7,3.8,1.4,150000,7.0,1080.8,1.7,1.44,1.49,2.38],["Manurewa West",2,705,-37.0315,174.8951,11.5,9.4,3.7,6.5,101600,20.8,1165.1,2.96,1.04,2.47,1.24],["Goodwood Heights West",2,417,-36.9949,174.8943,7.9,12.2,3.8,4.1,123600,19.9,780.5,0.37,3.03,1.44,1.09],["Weymouth West",2,519,-37.0398,174.8617,5.8,15.0,4.1,3.0,106600,23.6,1046.7,2.1,3.64,0.96,2.49],["South Head",4,891,-36.5981,174.3548,19.2,6.7,2.9,2.2,101500,6.5,2.6,9.96,26.5,28.61,12.31],["Kaipara Hills",4,663,-36.4565,174.4634,15.4,5.0,3.0,2.0,108200,7.7,2.3,18.78,19.33,18.15,19.06],["Mangatangi",4,348,-37.192,175.1472,17.2,2.6,2.9,2.7,109800,4.3,1.3,28.28,21.61,22.03,12.52],["Puhoi Valley",4,1287,-36.4662,174.6767,16.3,5.6,2.8,1.0,119700,5.2,5.4,6.69,7.49,8.56,7.49],["\u0100whitu",4,1092,-37.1508,174.6595,23.4,5.2,2.6,2.0,91300,5.2,4.9,8.37,12.57,22.16,20.54],["Kawakawa Bay-Orere",4,747,-36.9533,175.1388,23.7,3.6,2.5,1.3,94800,4.9,3.6,18.59,19.82,19.97,13.44],["Wait\u0101kere Ranges South",4,426,-37.0017,174.5515,27.5,2.1,2.5,1.5,98200,6.4,4.2,13.44,13.8,15.59,14.29],["Ararimu",4,711,-37.1483,175.065,13.9,5.1,3.0,0.9,141100,2.1,7.8,21.44,14.46,15.91,11.37],["Kaukapakapa Rural",4,549,-36.5977,174.4682,15.3,6.0,3.0,0.6,134400,3.8,6.0,7.72,20.2,18.53,8.95],["Wait\u0101kere Ranges North",4,414,-36.8951,174.4934,20.3,4.3,2.8,0.8,121700,3.7,4.8,11.3,14.39,12.55,12.48],["Turanga",4,987,-36.929,174.9679,9.7,9.7,3.2,1.3,171700,4.0,11.7,3.75,4.73,4.9,3.88],["P\u014dkeno Rural",4,528,-37.2529,175.0384,12.5,6.8,3.1,0.6,134800,5.1,6.2,19.96,13.85,13.4,1.63],["Dome Valley-Matakana",4,561,-36.3582,174.6923,17.1,3.2,2.6,0.6,107100,3.2,6.6,2.31,5.08,5.38,5.24],["Hunua",4,459,-37.0915,175.0799,11.1,7.8,3.0,1.3,144500,3.3,5.9,19.46,12.73,13.92,12.4],["Wainui-Waiwera",4,555,-36.5742,174.6197,22.2,6.5,2.7,1.7,117000,4.9,8.9,7.88,6.75,7.02,6.92],["Helensville Rural",4,501,-36.6897,174.4582,14.4,7.2,3.0,0.6,128500,4.9,8.9,3.82,12.76,19.77,1.52],["Waipatukahu",4,510,-36.7753,174.452,18.8,5.3,2.9,1.8,126400,7.1,9.1,9.31,9.12,14.84,10.88],["Glenbrook",4,921,-37.1846,174.7427,16.9,6.5,2.9,1.4,123100,4.9,17.3,5.27,7.35,14.12,14.26],["Waikoukou Valley",4,537,-36.7375,174.5081,14.0,6.7,3.0,1.2,138500,3.4,10.2,6.06,5.84,12.85,8.4],["Clevedon",4,531,-37.0206,175.0479,16.4,4.5,2.8,0.0,155300,3.9,10.9,13.86,10.68,11.05,10.38],["Waitoki",4,507,-36.6396,174.5879,11.8,7.7,3.1,1.2,148700,5.4,12.4,10.57,11.14,7.95,8.81],["Ramarama",4,948,-37.1512,174.9349,12.7,5.1,2.9,0.3,152400,3.2,23.9,10.27,5.06,6.76,6.1],["Puni",4,480,-37.2105,174.849,13.1,8.1,3.2,1.3,125000,5.6,12.2,3.1,5.4,4.53,4.88],["Muriwai Valley-Bethells Beach",4,360,-36.8635,174.4511,19.2,3.3,2.8,0.9,114400,2.5,10.2,13.52,13.46,14.83,15.2],["Karaka Creek",4,537,-37.1269,174.7703,14.0,5.0,2.8,1.1,137700,1.7,15.3,2.0,13.75,13.58,14.23],["\u014ckura Bush",4,426,-36.6672,174.7303,12.0,7.7,3.1,1.5,139400,4.3,15.1,3.58,2.18,7.27,3.71],["Patum\u0101hoe Rural",4,411,-37.1767,174.8463,13.1,8.8,3.0,0.8,133200,2.2,11.7,1.99,5.3,5.69,5.57],["Taupaki",4,531,-36.8089,174.57,14.7,8.5,3.1,1.8,135100,5.6,20.6,3.86,4.03,3.67,3.91],["Dairy Flat West",4,459,-36.6695,174.6199,13.7,7.8,3.0,1.4,139900,4.5,14.8,9.94,10.39,7.27,8.24],["Bombay Hills",4,648,-37.1714,175.0157,12.0,6.0,3.0,1.4,134300,3.3,21.5,16.7,10.13,10.97,8.2],["Coatesville",4,648,-36.7234,174.6333,10.6,7.9,3.1,1.0,174200,1.9,30.0,9.01,6.92,6.6,7.87],["Kume\u016b Rural West",4,534,-36.7679,174.5162,16.9,6.7,2.9,1.2,120700,3.9,21.9,3.69,3.48,10.1,10.25],["Waihoehoe",4,627,-37.0976,174.9835,11.0,7.7,3.1,0.5,146500,3.8,27.4,13.56,5.3,6.77,5.05],["Dairy Flat North",4,468,-36.6344,174.6538,12.8,12.2,3.3,2.0,135600,8.2,24.9,5.08,6.39,2.36,3.32],["Runciman",4,219,-37.1211,174.9294,16.4,12.3,3.2,1.5,132700,6.9,17.5,11.61,6.4,7.49,6.45],["Oratia",4,696,-36.9502,174.6115,14.7,6.9,2.9,1.3,141900,3.5,40.5,5.63,6.39,8.32,6.48],["Kume\u016b Rural East",4,585,-36.7798,174.5786,16.9,9.2,3.0,1.1,129900,6.7,35.8,2.03,2.25,5.25,5.25],["Mahurangi Peninsula",4,468,-36.4668,174.744,23.7,1.9,2.2,1.3,79200,1.9,30.5,5.6,10.2,11.85,10.36],["Swanson Rural",4,711,-36.889,174.573,14.8,7.6,3.0,2.2,134500,4.6,46.9,4.6,8.74,5.46,5.36],["Henderson Valley",4,471,-36.9036,174.5799,17.8,3.2,2.8,2.0,127500,3.8,31.3,5.36,9.34,5.53,5.33],["Wait\u0101kere",4,585,-36.86,174.5335,17.4,4.6,2.9,2.2,121000,5.2,39.6,7.2,9.62,8.01,8.38],["Dairy Flat South",4,495,-36.6997,174.6782,10.9,9.1,3.2,1.9,158000,3.7,34.4,6.49,4.27,4.2,5.2],["Anselmi Ridge",3,1008,-37.1819,174.9196,22.6,3.9,2.7,4.0,116300,1.8,133.8,8.09,1.63,3.14,2.49],["Maraetai",3,876,-36.8836,175.0329,16.4,2.7,2.8,1.4,149100,3.8,127.4,8.65,9.88,11.36,2.13],["Manukau Central",1,411,-37.0061,174.8345,54.0,2.9,1.8,16.1,69100,11.5,36.0,3.14,3.34,4.14,2.91],["Waiatarua",4,747,-36.9207,174.5956,14.5,5.6,2.9,2.1,125400,4.4,65.7,5.11,7.52,5.85,5.53],["Warkworth West",1,1089,-36.3924,174.6429,29.5,1.7,2.4,7.5,71400,3.3,95.8,7.81,2.28,0.59,2.05],["Silverdale South (Auckland)",4,336,-36.6266,174.6995,10.7,8.9,3.2,0.0,126400,4.5,32.3,2.29,2.98,2.43,2.16],["Buckland",4,399,-37.2181,174.9191,15.0,3.8,3.0,2.3,123300,4.5,47.2,8.7,3.45,2.25,1.05],["Drury South Crossing",4,237,-37.1293,174.9791,11.4,5.1,2.8,0.0,133100,1.3,29.5,14.85,7.98,9.43,7.83],["Wiri West",4,123,-37.0118,174.8496,19.5,2.4,3.3,10.8,96800,23.7,15.3,1.68,3.53,2.79,1.43],["Summerland South",3,921,-36.8819,174.6067,10.7,8.5,3.3,1.7,135900,5.5,690.4,2.11,5.96,2.36,2.28],["Tuscany Heights",4,417,-36.9844,174.9412,5.8,17.3,3.8,0.0,196200,3.6,63.0,4.07,3.43,3.2,5.09],["Penrose",1,426,-36.9167,174.8198,41.5,2.1,2.1,12.8,63800,5.7,66.3,2.28,3.11,1.84,1.75],["Birdwood West",4,252,-36.8551,174.5862,14.3,6.0,3.0,1.3,127700,6.0,40.4,2.67,6.06,3.74,4.07],["Onetangi",1,522,-36.7935,175.0755,30.5,1.7,2.2,5.9,86200,3.4,87.6,0.39,18.17,19.07,2.65],["Takanini North",2,672,-37.0262,174.928,17.0,7.1,3.5,4.6,100200,16.5,127.3,4.29,2.87,3.06,2.06],["North Harbour",1,297,-36.7446,174.7162,41.4,3.0,2.0,10.6,71300,9.2,54.1,5.35,1.88,1.83,1.48],["P\u014dkeno North",3,975,-37.2398,175.0226,8.6,7.4,3.3,1.3,143700,4.6,191.9,18.15,11.92,11.57,0.59],["Kaukapakapa",4,309,-36.623,174.4978,12.6,7.8,3.2,1.0,145800,5.8,58.8,7.15,17.59,15.72,7.32],["Milldale",3,678,-36.6092,174.6519,6.2,4.4,3.2,0.9,169400,1.4,130.0,4.18,4.5,2.29,2.67],["The Gardens (Auckland)",3,1083,-37.0024,174.913,7.8,13.0,3.6,1.1,158400,6.4,258.5,1.7,2.66,3.3,2.94],["Whenuapai West",4,378,-36.8035,174.593,8.7,8.7,3.1,1.6,148600,5.6,88.5,4.48,4.65,2.34,2.4],["M\u0101ngere South East",2,813,-36.9875,174.8154,4.8,17.3,4.3,3.1,129300,22.0,187.9,5.75,3.48,2.68,2.31],["Kume\u016b-Huapai North",3,1497,-36.7679,174.5462,11.0,5.2,3.1,1.2,149300,2.2,350.5,1.26,1.05,8.06,8.15],["Warkworth East",1,1377,-36.4043,174.6697,22.4,2.6,2.6,3.6,93300,4.6,326.3,5.09,0.63,2.26,0.74],["Harbour View Heights",4,279,-37.0622,174.9813,8.6,9.7,3.2,3.3,135900,6.5,111.8,10.48,3.61,4.61,3.27],["Albany Heights",3,1335,-36.7193,174.6932,13.3,6.1,3.1,2.5,128400,4.3,340.7,5.8,1.83,1.69,2.82],["Pukekohe North",1,666,-37.1785,174.8955,21.6,5.0,2.8,4.3,101000,6.7,170.7,6.02,1.43,2.99,2.41],["Snells Beach",1,1392,-36.4228,174.725,24.4,1.9,2.4,2.5,73400,2.4,363.7,0.43,5.83,7.58,6.06],["Oneroa East-Palm Beach",1,480,-36.7769,175.0427,27.5,1.9,2.2,5.1,94500,3.1,130.7,3.0,17.58,18.2,2.15],["Greenhithe South",3,624,-36.7761,174.6916,9.6,10.1,3.3,0.5,165200,3.9,171.2,1.53,4.3,4.7,2.86],["Waima-Woodlands Park",3,843,-36.9492,174.6398,12.5,2.5,3.1,1.1,153000,3.2,241.9,4.37,4.04,8.03,4.89],["Karaka Lakes",3,888,-37.089,174.925,6.4,9.5,3.4,1.0,165900,3.4,266.6,9.26,3.09,3.95,3.25],["Massey Red Hills",4,105,-36.8246,174.5891,11.4,5.7,2.8,5.7,120100,8.3,30.6,4.89,5.73,1.8,2.16],["Silverdale Central (Auckland)",4,264,-36.6211,174.6784,15.9,5.7,3.2,2.4,113100,8.2,78.6,2.45,4.06,0.45,0.82],["Albany Central",1,687,-36.7302,174.7002,33.2,0.9,2.0,12.6,78200,12.1,214.1,5.97,0.95,0.59,1.84],["Pukekohe Central",1,123,-37.2077,174.9115,43.9,2.4,2.3,10.0,62700,9.8,39.6,7.68,2.13,1.09,0.32],["Chatswood",3,1095,-36.8205,174.7088,11.8,6.0,3.1,2.8,148500,2.5,357.0,3.64,1.04,5.58,1.74],["Drury East",4,228,-37.0977,174.9456,15.8,6.6,3.0,5.5,106900,11.7,74.4,11.15,3.74,5.07,3.71],["Onehunga-Te Papapa Industrial",1,486,-36.9261,174.7844,35.8,1.2,2.1,10.7,94800,8.4,160.2,0.79,4.86,1.99,0.39],["Muriwai",4,264,-36.8235,174.4252,15.9,1.1,2.8,1.2,133500,4.7,87.6,12.84,12.72,16.36,16.4],["Tindalls-Matakatia",3,702,-36.6181,174.7744,17.5,4.3,2.6,2.2,114300,2.6,239.3,1.6,3.92,9.03,3.24],["Hobsonville",3,597,-36.7972,174.6442,18.1,7.0,3.0,2.6,131300,3.0,205.9,4.61,0.22,4.09,0.33],["Long Bay",3,924,-36.6899,174.7341,7.8,8.1,3.4,1.0,161000,2.3,323.9,1.59,0.73,5.07,3.28],["Drury West",4,294,-37.1006,174.9349,13.3,5.1,2.9,1.1,115600,6.2,103.2,10.82,4.07,5.22,4.12],["Gulf Harbour South",3,1140,-36.6199,174.7982,17.6,2.1,2.6,1.9,107100,1.6,486.2,0.76,5.94,11.15,5.0],["Kume\u016b-Huapai South",3,735,-36.7769,174.5467,12.7,3.7,2.9,2.1,142800,2.5,286.9,0.87,0.71,7.34,7.46],["Papakura Kelvin",2,594,-37.0596,174.9561,18.7,6.6,3.3,9.7,94600,18.8,1213.5,8.73,1.46,2.36,1.14],["Millwater South",3,1185,-36.6143,174.6707,7.8,7.1,3.5,1.0,158800,1.8,489.8,2.65,3.7,0.71,0.93],["Clarks Beach",3,561,-37.14,174.6996,18.2,3.2,2.6,1.6,109400,2.2,232.6,4.68,12.45,19.1,17.7],["Schnapper Rock",3,1122,-36.7566,174.6819,6.7,9.1,3.4,1.6,151300,3.2,506.8,3.85,4.05,3.7,4.43],["Takapuna Central",1,1284,-36.7824,174.7696,30.6,1.4,2.1,7.1,120600,4.0,1130.9,6.71,0.65,2.31,1.08],["Kendallvale",3,363,-37.2534,174.7415,7.4,3.3,2.9,1.7,132900,2.5,169.3,10.63,1.23,15.01,15.46],["Riverhead",3,1116,-36.7601,174.5963,9.7,3.8,3.1,0.8,157600,2.2,517.2,3.97,4.1,6.78,6.2],["Albany West",1,915,-36.7386,174.6862,20.7,4.3,2.9,3.7,93600,4.3,444.8,5.71,2.46,2.07,3.17],["Swanson",3,1083,-36.8615,174.5886,11.9,7.8,3.3,2.9,137200,6.1,517.3,2.29,6.06,3.54,3.87],["Whangapar\u0101oa Central",3,834,-36.6324,174.7288,17.6,3.2,2.8,3.0,112800,4.7,410.1,4.0,0.54,5.13,1.61],["Westmere South-Western Springs",3,1020,-36.8586,174.7193,21.8,2.1,2.7,4.9,170600,4.4,504.0,3.7,1.41,3.96,1.19],["Ormiston South",2,747,-36.9794,174.9154,3.2,30.9,5.0,1.6,189300,10.4,748.6,1.97,1.68,1.63,2.9],["Henderson Central",0,729,-36.8847,174.6294,55.6,1.2,1.8,28.7,40300,6.4,361.6,2.68,5.1,0.89,0.54],["Takapuna West",1,1434,-36.7877,174.7624,34.7,1.7,2.2,11.7,86900,5.5,713.0,6.02,0.67,1.91,0.5],["Henderson Lincoln East",1,120,-36.8528,174.6367,47.5,0.0,1.7,8.1,42600,2.6,61.6,2.36,1.79,0.95,0.67],["Glen Eden North",1,912,-36.905,174.6517,25.7,4.3,2.7,11.2,87700,12.3,486.0,0.67,3.08,3.53,1.18],["West Harbour West",3,1257,-36.8223,174.6279,11.9,5.7,3.2,4.3,103100,11.2,652.2,4.77,2.99,1.73,1.21],["Alfriston",2,1053,-37.0106,174.921,14.2,11.4,3.5,5.7,121300,10.9,568.6,2.72,2.56,4.39,3.01],["Red Beach West",1,1161,-36.6144,174.6968,26.4,4.4,2.5,5.1,92200,2.3,630.0,0.94,3.11,2.18,1.41],["Narrow Neck",3,1584,-36.8156,174.7953,22.9,1.9,2.6,5.1,127400,3.0,869.1,4.07,1.54,6.12,2.6],["Patum\u0101hoe",3,426,-37.19,174.8257,12.7,4.2,3.0,1.4,135300,0.7,234.7,0.36,6.94,6.77,6.87],["Te Atat\u016b Peninsula East",3,936,-36.8404,174.6572,16.0,6.4,3.0,3.4,126500,5.7,517.7,4.65,0.5,3.24,2.95],["Pakuranga Heights East",3,885,-36.9108,174.8989,12.5,7.8,3.2,2.8,111200,9.5,494.2,0.96,2.45,1.47,1.51],["Gulf Harbour North",3,975,-36.6091,174.7925,10.2,5.2,3.0,1.3,131600,1.5,554.9,0.68,5.78,10.72,5.13],["Takanini East",2,933,-37.0424,174.9401,6.4,13.8,3.8,2.3,143500,11.1,574.4,6.35,2.42,1.51,1.28],["Millwater Central",3,1155,-36.5998,174.6724,11.9,4.7,3.1,0.5,153800,0.8,659.1,2.42,2.4,2.27,1.75],["Somerville",3,1389,-36.9115,174.934,10.8,7.8,3.1,2.2,127300,1.9,892.6,0.94,1.16,2.77,0.52],["Maungawhau",3,891,-36.8906,174.7536,16.5,3.0,3.0,3.4,153400,5.1,1213.0,2.8,2.63,2.84,1.47],["Cockle Bay",3,1434,-36.8994,174.9468,15.7,3.8,2.9,2.2,136000,2.3,829.7,0.86,2.01,3.55,1.32],["Glendowie North",3,1041,-36.8541,174.8778,10.4,2.3,3.1,1.2,200000,1.7,608.9,1.82,4.41,3.15,3.62],["Westgate South",3,966,-36.826,174.61,17.4,5.6,2.9,4.9,122700,8.1,565.1,4.22,4.2,0.63,0.64],["Orakei East",1,984,-36.8552,174.8218,26.8,4.0,2.6,9.0,121000,8.9,576.3,2.97,0.92,3.75,2.42],["M\u0101ngere Mountain View",2,1050,-36.9518,174.7859,14.6,10.9,3.6,4.3,122800,15.8,616.0,3.64,6.63,2.09,2.45],["Remuera Waitaramoa",3,1299,-36.8674,174.7936,15.7,3.2,2.9,3.1,171400,2.8,768.3,2.2,1.47,5.04,1.67],["Mellons Bay",3,1323,-36.8867,174.9317,15.2,6.1,3.0,2.3,143000,2.7,789.3,2.06,2.01,2.61,1.05],["Wade Heads-Arkles Bay",3,684,-36.6421,174.7382,14.9,3.5,2.8,1.4,131900,2.2,412.5,5.35,1.57,6.27,0.96],["Parnell West",1,1602,-36.8564,174.7784,33.9,1.3,2.2,9.8,129700,5.4,971.4,1.61,1.58,5.97,1.34],["M\u0101ngere Bridge",1,972,-36.9423,174.7908,26.2,5.6,2.9,7.3,105100,9.5,603.7,2.65,6.27,2.95,2.28],["Fairview Heights",3,1161,-36.7088,174.7176,13.2,14.0,3.5,3.9,123400,5.7,721.5,3.33,2.24,2.53,2.57],["Conifer Grove West",3,1143,-37.0454,174.9064,10.0,9.2,3.1,1.1,143700,4.0,717.9,4.61,2.74,2.34,1.09],["Manly East",1,1359,-36.6351,174.763,23.4,2.4,2.5,3.9,94500,3.1,863.1,3.4,2.81,8.17,1.51],["Takanini South East",3,645,-37.0485,174.9506,5.6,7.9,3.5,2.0,130200,12.1,778.3,7.48,1.95,1.87,1.43],["Remuera Waiatarua",3,804,-36.8816,174.829,17.2,3.4,2.9,2.7,144500,5.6,512.0,1.53,1.01,2.42,0.58],["Papakura Central",1,1320,-37.063,174.9387,31.6,4.1,2.6,14.7,72200,11.7,843.3,8.07,0.24,1.26,0.5],["Ormiston South East",3,303,-36.9856,174.9313,9.9,7.9,3.3,1.0,135000,5.1,193.7,3.43,2.91,2.73,4.2],["Red Beach East",1,1458,-36.6037,174.7067,24.5,2.9,2.5,3.4,103100,2.5,932.5,0.78,2.24,3.49,2.0],["\u014ctara West",2,588,-36.9504,174.8661,9.2,17.3,4.6,14.7,90300,39.7,378.2,3.62,3.49,4.36,2.19],["Ellerslie Central",3,1131,-36.8928,174.8069,24.1,2.4,2.7,7.0,132500,6.6,730.8,0.61,1.46,3.49,1.24],["Manurewa East",2,837,-37.0271,174.9062,21.1,8.2,3.3,14.6,84500,20.5,1010.5,3.37,1.05,3.5,0.96],["Rosehill",2,1086,-37.0826,174.9402,13.8,9.1,3.5,4.7,108800,12.1,702.9,9.59,2.05,3.33,2.08],["Orewa North",1,1755,-36.5821,174.6816,27.5,3.6,2.4,4.5,86900,1.0,1148.0,3.05,1.18,4.29,1.38],["Sunkist Bay",3,1056,-36.8806,174.9946,14.8,2.8,2.9,1.8,141700,3.1,691.1,5.58,6.72,8.08,1.74],["\u014ctara Central",2,567,-36.9513,174.8786,20.6,16.4,4.0,18.1,79200,30.2,372.8,2.62,3.3,3.57,2.68],["Mount Albert North",3,1368,-36.8769,174.7182,21.1,2.9,2.9,8.9,118200,8.8,903.6,3.91,0.8,2.06,1.07],["Saint Marys Bay",1,855,-36.8415,174.7464,34.0,1.1,2.2,5.8,149300,2.5,1024.8,1.93,1.82,6.71,0.99],["Henderson Lincoln South",3,906,-36.868,174.6235,15.2,7.3,3.2,7.3,101500,15.1,602.3,0.96,3.81,1.21,1.39],["Tamakae",1,981,-37.2409,174.7238,26.0,3.7,2.5,4.8,83500,3.7,654.0,11.02,1.07,16.1,16.49],["Royal Heights North",3,1269,-36.8273,174.6318,15.6,5.9,3.0,5.0,116000,9.0,848.9,4.36,2.5,2.21,1.69],["Albany South",3,1158,-36.7375,174.7017,17.9,3.9,2.8,4.8,106000,4.4,780.3,5.81,1.3,0.96,1.82],["Wattle Downs West",3,1239,-37.0498,174.8806,17.9,6.5,3.0,4.3,120400,5.3,838.7,3.5,3.37,2.25,2.91],["Kaurilands",3,1044,-36.9286,174.6565,16.4,3.2,2.9,3.3,134400,3.5,713.4,2.0,2.03,5.95,2.2],["Bremner Ridge",2,504,-36.9831,174.9333,3.6,23.8,4.5,1.2,180500,6.1,345.4,3.4,2.81,2.61,4.4],["Baverstock",2,1050,-36.9526,174.9231,5.7,13.1,3.9,1.8,144900,8.3,719.6,2.32,1.67,1.54,2.72],["Orakei West",3,1074,-36.8571,174.8114,21.2,2.2,2.5,4.6,154800,4.2,770.1,2.62,1.64,4.42,2.62],["Orewa Central",1,1470,-36.5885,174.6945,37.1,1.2,2.0,8.4,59800,2.5,1011.6,1.98,0.23,3.99,0.05],["Ormiston East",2,633,-36.9758,174.9286,4.3,32.7,5.0,2.4,177800,10.6,453.3,2.62,1.95,1.73,4.13],["Greenhithe East",3,921,-36.7638,174.6854,7.5,6.5,3.4,1.0,156400,2.9,639.6,2.99,4.54,4.22,3.89],["Grange",2,522,-36.9576,174.853,9.8,16.7,4.3,7.3,107400,30.6,364.2,4.48,2.5,4.17,1.6],["Te Atat\u016b Peninsula West",3,1365,-36.8466,174.6423,18.2,4.0,2.9,3.2,122200,8.1,954.8,3.17,0.99,1.78,1.52],["Remuera South",3,1245,-36.8815,174.7936,16.6,3.4,3.0,5.4,150100,6.5,871.0,1.63,0.36,3.61,0.86],["Wesley East",2,576,-36.9021,174.7339,22.4,8.9,3.2,16.9,75200,19.7,948.9,4.63,0.73,2.68,0.66],["West Harbour Clearwater Cove",3,1086,-36.8085,174.6428,13.0,6.9,3.0,2.0,126600,1.9,987.0,5.11,1.06,3.33,1.29],["Remuera North",3,1167,-36.8675,174.8107,15.9,3.1,2.9,2.1,176900,3.3,826.1,1.47,1.79,4.07,1.86],["Golflands",3,882,-36.9219,174.9042,15.6,4.4,2.8,3.1,105900,3.4,626.8,1.5,1.48,1.24,1.09],["Massey West",3,786,-36.8479,174.605,9.9,6.9,3.3,2.8,122300,9.9,559.9,1.95,4.26,2.32,2.59],["Glen Innes East-Wai O Taiki Bay",3,1383,-36.8754,174.8726,11.9,5.9,3.3,6.6,121600,16.6,989.8,3.02,4.0,1.56,1.88],["Mount Albert West",3,822,-36.8844,174.7047,19.3,4.4,2.9,7.8,129200,8.4,591.0,5.32,1.73,0.93,1.69],["Bucklands Beach North",3,1029,-36.8573,174.904,14.0,6.4,2.9,1.5,130100,2.3,743.7,4.18,5.5,4.67,4.69],["Vipond",1,1080,-36.6182,174.7184,23.3,2.5,2.6,3.8,101200,2.2,782.0,2.24,1.72,4.02,3.19],["Bayview East (Auckland)",3,1143,-36.7703,174.7139,12.3,6.6,3.1,3.0,125500,8.4,831.7,2.73,4.55,2.86,1.5],["Hobsonville Scott Point",3,888,-36.802,174.6646,7.4,8.4,3.4,1.4,159500,2.8,643.3,3.04,1.79,5.4,1.58],["Orewa South",1,1341,-36.5927,174.6855,35.1,1.1,2.1,8.7,55500,1.8,971.6,1.88,1.0,3.24,0.99],["Glendowie South East",1,726,-36.8678,174.8812,26.4,2.5,2.6,6.3,121900,3.7,528.3,2.8,4.71,2.49,2.89],["Glen Innes West",3,1215,-36.8732,174.8578,16.8,6.2,3.3,7.6,117400,16.0,888.6,2.48,2.89,0.38,0.86],["Rooseville Park",3,858,-37.196,174.9115,20.3,3.8,2.8,4.4,114400,4.6,637.0,7.4,0.99,1.47,0.91],["Birkenhead South",3,1125,-36.8179,174.7333,20.5,1.9,2.6,3.8,141200,2.7,826.2,4.27,2.07,4.43,1.06],["Waikowhai Bay",3,597,-36.9331,174.7385,13.1,8.0,3.2,1.1,157000,5.6,440.0,4.39,2.75,4.08,1.63],["Pakuranga North",3,924,-36.9106,174.8654,19.5,3.9,2.8,5.7,110500,8.1,682.5,2.21,3.74,2.28,0.56],["Beach Haven South",3,1092,-36.8077,174.6909,15.9,3.8,2.8,2.0,146900,2.5,813.3,2.03,1.89,5.72,3.04],["Ormiston Central",2,1023,-36.9695,174.9158,4.4,17.3,4.2,3.3,148300,8.6,765.4,1.29,0.66,0.54,3.4],["Saint Heliers North",3,1476,-36.849,174.8615,19.7,1.6,2.5,2.3,157600,1.6,1102.9,0.39,3.19,3.04,3.49],["Stanmore Bay East",1,1008,-36.6275,174.7412,22.6,2.4,2.6,2.8,100600,3.3,753.6,4.5,0.77,6.11,1.07],["Mount Albert Central",3,1155,-36.8847,174.724,17.4,3.6,2.9,6.6,144000,5.5,879.3,3.82,0.51,1.82,0.96],["Cloverlea (Auckland)",1,930,-37.217,174.894,22.9,4.5,2.7,3.9,105200,3.5,712.3,6.64,3.18,1.4,1.75],["Awaruku",3,1116,-36.6995,174.7301,10.2,6.2,3.0,1.9,139200,3.8,865.7,1.9,1.81,3.96,2.51],["Half Moon Bay West",3,984,-36.8876,174.8949,15.2,4.3,2.8,2.5,127700,2.8,866.3,3.09,3.24,1.69,1.77],["Konini Road",3,711,-36.9315,174.6449,17.3,2.5,2.8,2.2,133800,2.5,560.4,2.35,3.05,6.13,2.95],["Blockhouse Bay South",3,912,-36.9294,174.6999,18.1,7.2,3.1,6.2,126300,5.6,721.1,4.76,1.86,4.1,2.1],["Green Bay South",1,1206,-36.9343,174.6794,33.3,2.7,2.4,8.3,78000,3.7,958.8,3.57,0.37,5.19,3.02],["\u014ct\u0101huhu Central",1,342,-36.9438,174.84,36.0,4.4,2.5,18.1,72500,18.9,272.6,5.44,4.22,3.37,0.26],["Waiake",3,1284,-36.706,174.7464,15.7,4.7,2.9,2.6,133900,3.7,1027.4,1.29,1.1,4.42,1.27],["Glen Eden Central",1,1263,-36.9159,174.6523,23.5,3.8,2.7,9.6,97200,7.9,1012.3,0.55,2.91,4.65,1.23],["Pukekohe West",1,1305,-37.1985,174.8916,19.8,6.4,3.1,6.1,92100,11.8,1048.0,5.7,1.48,1.03,0.95],["Glen Eden Rosier",3,1056,-36.9138,174.6372,16.2,6.0,3.1,3.9,110100,7.9,848.7,1.33,4.19,4.1,2.41],["Mount St John",3,978,-36.8825,174.7799,16.3,3.7,2.9,6.9,124100,9.2,787.1,2.56,1.17,3.11,1.35],["\u014ct\u0101huhu South West",2,882,-36.953,174.8434,19.7,7.8,3.2,12.8,84800,23.3,710.1,5.42,3.14,4.41,0.91],["West Harbour Luckens Point",3,1029,-36.8175,174.6409,9.3,6.4,3.1,1.2,133400,2.9,829.4,5.68,2.07,2.9,2.29],["Forrest Hill West",3,1194,-36.768,174.7458,12.1,7.5,3.2,4.9,120300,6.3,966.6,5.13,1.75,1.22,1.13],["Point View",3,825,-36.9402,174.9217,6.5,8.7,3.3,1.1,146900,2.9,669.6,3.26,1.15,1.32,1.47],["Shelly Park",3,921,-36.9096,174.9484,12.7,5.5,3.1,1.0,145100,2.3,747.8,1.01,2.18,3.87,1.8],["Parnell East",3,1305,-36.8554,174.7888,23.7,2.3,2.4,5.9,159500,3.2,1063.7,2.23,2.08,6.21,1.82],["Titirangi East",3,1041,-36.9245,174.6661,16.1,5.2,3.0,2.4,132100,4.0,850.3,1.98,1.36,5.02,1.68],["Quay Street-Customs Street",0,942,-36.8437,174.7753,37.3,0.6,1.9,37.0,87300,11.2,774.0,0.69,0.9,7.37,0.28],["Leabank",2,711,-37.034,174.887,17.3,10.5,3.7,11.3,85700,23.9,584.4,2.47,1.55,1.75,1.89],["Mount Roskill Central South",2,636,-36.9152,174.7396,13.7,8.0,3.6,9.5,76600,19.6,529.1,4.02,0.87,3.13,1.64],["Pahurehure",3,1026,-37.0643,174.9304,16.1,7.0,3.1,2.5,120500,6.7,848.6,7.58,0.93,1.19,1.13],["Beach Haven West",3,1212,-36.7922,174.6836,20.0,2.2,2.7,3.9,123400,3.7,1003.8,1.05,3.28,5.59,3.25],["Rongomai East",2,453,-36.972,174.8921,6.0,13.9,4.1,9.2,93800,30.5,779.4,1.19,1.93,2.04,1.77],["Bayswater",3,1014,-36.8139,174.7767,23.1,2.1,2.7,7.7,130200,3.6,924.4,3.52,2.45,4.85,1.91],["Eastern Beach",3,741,-36.8747,174.9132,15.0,4.5,2.9,2.5,111400,2.8,627.5,4.01,3.41,2.78,2.78],["Glenfield South West",3,1215,-36.7884,174.7097,12.6,6.7,3.1,2.8,126300,6.7,1020.8,1.32,2.56,3.24,1.38],["Northcote Point (Auckland)",3,1062,-36.8186,174.7451,21.5,2.5,2.7,2.8,162200,2.8,896.6,3.53,3.1,4.41,2.0],["Browns Bay Central",1,1188,-36.7137,174.745,27.0,3.5,2.4,6.8,99000,4.3,1004.4,2.14,0.32,3.86,0.46],["New Lynn Central",1,189,-36.9065,174.6864,38.1,3.2,2.1,22.4,75700,11.3,159.9,3.14,0.49,2.33,0.2],["Avondale South (Auckland)",3,1335,-36.9038,174.6922,18.9,7.9,3.2,9.2,107700,12.7,1135.0,3.71,0.99,1.74,0.8],["Massey South",3,1032,-36.8519,174.6184,12.2,8.1,3.3,3.4,110400,11.3,881.1,1.38,3.19,1.07,1.32],["Akoranga",1,513,-36.7996,174.7548,51.5,3.5,2.0,17.3,45100,5.4,441.2,5.14,1.85,2.49,0.88],["Highland Park (Auckland)",1,1368,-36.9068,174.9071,20.6,6.1,2.8,6.4,94400,6.4,1177.8,1.82,1.63,0.83,0.82],["Hillsborough South (Auckland)",3,837,-36.9268,174.7619,12.5,7.9,3.2,1.9,149800,5.8,721.6,2.2,3.17,2.15,1.97],["Birkdale South",3,1218,-36.7995,174.7074,16.0,3.4,2.9,3.8,130600,5.7,1051.6,1.56,1.36,3.99,2.02],["Glen Eden West",3,1086,-36.9121,174.627,15.5,7.2,3.2,5.0,109900,12.0,940.6,2.2,5.09,3.91,3.28],["Belmont (Auckland)",3,1053,-36.8053,174.7864,21.7,3.1,2.7,5.9,124900,4.3,912.2,4.69,2.4,4.78,1.21],["Browns Bay South West",3,1311,-36.7214,174.7305,11.0,5.7,3.1,1.9,125600,3.7,1138.7,3.44,1.61,2.32,1.44],["\u014cpaheke",3,954,-37.0778,174.9488,14.5,6.0,3.2,3.3,115200,10.0,829.8,9.79,1.67,3.13,1.54],["Massey Keegan",2,954,-36.8418,174.6229,11.6,10.1,3.5,4.4,115200,15.0,829.9,2.57,2.62,1.83,1.89],["Hilltop (Auckland)",2,1026,-36.9861,174.9044,6.4,15.8,3.9,2.1,137500,12.0,897.3,1.6,2.47,2.12,1.8],["Northcote South (Auckland)",3,876,-36.8084,174.741,17.8,4.8,2.9,3.8,130700,5.2,768.7,4.6,2.65,3.28,0.97],["Waiuku Central",1,468,-37.2512,174.7316,24.4,4.5,2.7,4.7,90500,3.9,413.6,11.13,0.33,15.76,16.19],["Royal Heights South",2,1056,-36.8363,174.6298,15.3,9.4,3.3,4.2,105500,12.7,933.4,3.37,2.13,2.39,2.15],["Glenfield Central",3,1320,-36.7852,174.7251,17.5,5.7,3.0,5.4,110300,9.3,1170.1,2.74,3.15,1.83,0.43],["Pakuranga Central",3,984,-36.9164,174.8783,14.0,8.8,3.3,4.8,118700,11.2,873.6,1.01,3.54,3.18,0.75],["Sunnyvale East",3,1038,-36.8989,174.6367,13.6,7.8,3.2,4.6,121100,10.1,923.5,1.89,4.55,2.45,2.08],["Waterview",1,1410,-36.8785,174.6994,24.3,4.0,2.8,10.1,103400,11.3,1256.8,5.57,1.51,1.69,1.36],["Symonds Street East",0,600,-36.8561,174.7669,35.5,0.0,1.9,58.5,51600,7.9,5801.1,1.26,1.07,6.03,0.85],["Beach Haven East",3,1293,-36.7889,174.694,16.2,4.6,3.1,6.8,113000,10.4,1153.4,0.12,2.95,4.6,2.69],["Avondale Central (Auckland)",1,966,-36.8967,174.6968,26.1,5.6,2.7,11.8,92700,11.2,865.4,4.33,1.87,0.94,1.62],["Hillpark South",2,885,-37.0175,174.9,18.3,10.2,3.3,6.8,110100,13.5,818.3,2.19,0.63,3.34,2.14],["Northcote Tuff Crater",3,756,-36.8066,174.7516,16.3,4.0,2.9,3.6,140500,5.1,678.6,4.47,2.61,3.14,0.92],["Hobson Ridge Central",0,1197,-36.851,174.7607,34.3,0.3,2.0,61.6,62900,11.0,18904.1,0.93,0.68,6.67,0.44],["Te Atat\u016b Peninsula North West",3,1203,-36.8312,174.6448,17.7,4.2,2.9,4.2,125700,7.8,1081.2,4.55,1.44,3.31,2.93],["Howick East",1,1359,-36.8991,174.9323,23.6,4.0,2.7,5.1,110400,4.2,1225.1,0.85,0.84,2.26,0.33],["Favona North",2,633,-36.9476,174.8123,13.7,19.0,4.2,9.0,102300,29.5,570.7,4.02,5.15,2.69,2.28],["Glendene South",3,897,-36.8931,174.6605,15.7,7.4,3.2,3.9,106700,12.0,815.3,2.13,2.97,3.06,1.84],["Birkenhead North West",3,519,-36.802,174.7178,13.9,5.8,2.9,1.8,142400,3.4,468.6,2.46,1.17,3.48,1.2],["Hobsonville Point Catalina Bay",3,1380,-36.792,174.6691,20.4,1.5,2.5,1.8,143900,2.4,1250.5,2.32,2.3,6.26,2.0],["Hauraki",3,1467,-36.802,174.775,15.7,3.5,2.9,3.3,141000,3.1,1340.3,4.79,1.6,3.77,0.64],["Morningside (Auckland)",3,1242,-36.8738,174.7333,22.0,2.7,2.6,6.5,132400,5.8,1135.4,2.53,0.98,3.2,1.07],["Takanini Central",1,378,-37.0512,174.9243,28.6,7.9,2.7,10.0,84000,4.8,346.3,6.28,2.06,0.63,0.48],["Henderson West",3,876,-36.8804,174.6224,17.5,7.2,3.0,8.0,97000,9.3,806.2,1.98,4.97,0.97,0.88],["Manurewa Central",2,1050,-37.0203,174.892,21.7,7.1,3.2,10.8,84100,19.4,971.2,2.45,0.42,2.57,2.22],["Epsom North",3,987,-36.876,174.7716,17.3,4.6,2.9,5.9,131600,7.3,916.2,1.54,0.72,3.79,0.66],["Devonport",3,1233,-36.8286,174.7969,22.6,1.2,2.5,7.5,135900,2.2,1142.7,3.17,0.12,7.25,2.84],["Western Heights (Auckland)",3,987,-36.8909,174.6126,8.8,10.6,3.5,1.9,138700,4.5,919.3,3.0,6.42,2.34,2.1],["Mission Heights North",2,858,-36.9585,174.9284,7.3,16.8,3.9,1.8,149000,5.6,799.9,2.43,1.63,1.38,3.52],["Hillcrest East (Auckland)",3,1281,-36.7938,174.7336,16.6,5.2,2.9,3.8,127300,6.3,1204.1,3.48,2.76,1.9,1.24],["Northcross",3,1062,-36.7113,174.7316,14.4,5.6,2.9,2.6,125200,4.2,991.8,2.48,1.49,3.03,1.56],["Weymouth South",2,969,-37.0472,174.8644,16.4,10.8,3.5,4.6,101100,16.6,915.8,2.9,3.97,1.66,3.3],["Point Chevalier West",1,1152,-36.87,174.7007,36.7,1.8,2.4,14.6,92500,3.7,1092.7,5.3,1.09,2.56,0.85],["Northcote Central (Auckland)",3,789,-36.799,174.745,22.1,5.3,2.8,7.9,117900,8.8,1148.9,4.59,2.52,2.23,0.13],["Birkenhead West",1,1074,-36.8091,174.7106,26.3,2.5,2.5,6.0,116100,2.8,1030.7,2.57,0.26,4.49,1.28],["Saint Johns West",3,981,-36.8773,174.8347,13.5,4.9,2.9,3.4,143700,3.1,941.7,2.07,1.48,1.83,0.57],["Green Bay North",1,672,-36.9273,174.6797,28.6,4.5,2.7,11.5,91100,4.0,649.0,3.09,0.4,4.51,2.26],["Hobsonville Point Park",3,2028,-36.7918,174.6569,20.7,3.0,2.6,2.9,133000,3.3,1961.6,3.41,1.34,5.36,1.04],["Manly West",3,864,-36.6266,174.7491,19.1,3.8,2.6,2.2,111800,3.5,836.7,4.03,1.49,6.8,1.1],["R\u0101nui North",2,1086,-36.8592,174.6006,16.9,7.2,3.3,8.0,93000,15.7,1055.7,1.31,4.97,2.45,2.78],["Botany Downs West",3,1065,-36.9075,174.9128,12.1,6.8,3.0,2.0,123800,4.8,1036.5,2.24,1.16,1.05,0.99],["Meadowbank West",3,1068,-36.8681,174.824,27.2,3.1,2.7,5.8,135200,3.1,1042.5,1.76,0.9,2.91,1.0],["Te Atat\u016b South-McLeod South",3,1032,-36.8811,174.6524,16.6,8.1,3.1,4.7,113500,8.4,1008.9,3.31,4.27,1.83,1.79],["Remuera Abbotts Park",3,1305,-36.8854,174.8142,21.6,3.0,2.8,5.7,143100,4.8,1276.9,0.56,1.52,3.8,1.62],["Epsom Central-South",3,1164,-36.8964,174.7677,12.4,5.4,3.2,3.9,151600,7.7,1183.6,2.92,2.85,1.64,1.68],["Wattle Downs East",3,687,-37.0487,174.8939,16.6,8.3,3.0,3.2,119100,5.2,675.8,4.03,2.95,2.96,1.92],["Papakura North",3,1116,-37.0572,174.9453,19.1,7.3,3.1,8.9,97600,14.4,1101.3,7.94,0.88,1.36,0.42],["Panmure East",1,1152,-36.9034,174.8538,26.3,4.9,2.7,9.1,100800,12.2,1134.5,3.44,2.43,1.65,1.62],["Birkenhead North",3,990,-36.8082,174.7288,19.4,3.3,2.7,5.9,125200,4.8,978.4,3.65,1.57,3.52,0.51],["Pukekohe South West",3,858,-37.2041,174.8843,9.8,6.3,3.2,1.8,126600,7.1,852.1,5.26,2.37,1.36,1.67],["Red Hill",2,705,-37.0721,174.9766,14.5,9.8,3.5,8.1,94100,17.7,709.4,10.96,3.3,4.57,2.96],["Birkdale Central",3,1014,-36.7979,174.7006,16.9,5.0,2.9,4.0,124900,7.1,1021.9,1.05,1.78,4.42,2.62],["Stanley Point",3,591,-36.8268,174.7815,15.2,3.0,2.8,2.6,186200,2.0,596.0,2.34,1.34,6.28,2.19],["Stanmore Bay West",3,915,-36.6236,174.7287,16.7,2.6,2.8,1.7,117200,3.3,927.2,3.34,0.66,4.95,2.1],["Hillcrest North (Auckland)",3,1134,-36.789,174.7362,16.1,6.6,3.0,5.9,114800,8.0,1156.3,3.68,3.0,1.32,1.44],["Point Chevalier East",3,1092,-36.8642,174.7134,19.8,2.5,2.8,7.8,147000,6.3,1119.3,4.15,0.68,3.23,0.68],["Onehunga West",3,1170,-36.9201,174.7746,23.6,4.4,2.7,5.4,129200,6.4,1200.4,0.89,3.8,1.11,0.84],["Pakuranga Heights South West",3,996,-36.9219,174.8874,14.8,9.0,3.2,4.1,111100,10.2,1023.2,0.78,2.52,2.47,1.76],["Glenfield West",3,990,-36.7817,174.7177,18.2,6.7,2.9,7.5,114000,8.2,1019.8,2.21,3.34,2.38,0.46],["Glendowie South West",3,1047,-36.8637,174.8641,18.6,2.6,2.9,3.5,155400,2.9,1078.6,1.53,3.13,1.56,2.04],["Henderson Valley Park",2,756,-36.8927,174.6152,10.7,11.1,3.5,6.0,107400,15.0,780.0,3.2,6.47,2.32,2.04],["Kelston North",2,750,-36.8943,174.6662,14.0,8.8,3.5,6.8,105700,16.7,775.7,2.26,2.52,3.56,1.7],["Blockhouse Bay Central",3,993,-36.9191,174.6982,17.8,4.8,3.0,7.8,106800,6.6,1030.7,4.25,1.46,3.01,1.8],["Glamorgan",3,1068,-36.7016,174.7408,16.0,6.2,3.0,3.1,128800,4.2,1113.4,1.15,1.69,4.37,1.85],["Mount Roskill North",1,1248,-36.8999,174.7441,21.2,4.6,2.8,9.9,113900,9.8,1302.5,4.03,1.29,2.92,1.37],["Murrays Bay West",3,819,-36.732,174.7425,12.1,6.6,3.1,1.5,134600,2.2,855.5,4.17,1.83,3.2,1.24],["R\u0101nui South East",2,762,-36.8712,174.6063,12.6,9.8,3.6,7.1,112900,11.3,806.6,1.07,5.19,2.42,2.53],["Harania North",2,711,-36.9588,174.8152,4.6,22.4,4.9,6.9,99800,38.8,752.9,5.2,4.15,1.95,1.11],["Remuera Waiata",3,1017,-36.877,174.8047,18.3,2.7,2.7,3.6,169800,2.9,1077.9,0.76,0.83,4.5,1.69],["Avondale Rosebank (Auckland)",3,1155,-36.8906,174.6759,14.5,7.0,3.2,4.5,110900,13.6,1225.1,3.14,2.41,2.7,2.0],["Mount Roskill West",3,981,-36.9223,174.7155,16.8,7.6,3.1,6.0,109500,9.2,1042.9,5.83,2.27,3.39,0.75],["Pakuranga West",1,813,-36.9212,174.8711,21.8,6.3,2.9,8.5,98600,10.7,866.6,1.78,3.86,2.9,0.91],["Point England North",1,735,-36.8804,174.8723,26.9,7.8,3.2,26.1,53000,24.2,785.0,3.52,3.77,1.61,1.79],["Bayview South (Auckland)",3,939,-36.7805,174.7075,12.5,6.1,3.0,2.3,130600,8.0,1005.8,1.51,3.44,3.27,1.37],["Pinehill South",2,645,-36.7329,174.728,7.4,15.8,3.8,2.9,123900,5.6,692.3,4.67,1.64,1.93,0.66],["Millwater North",3,393,-36.5937,174.6711,6.1,6.9,3.4,1.6,178700,2.3,421.9,2.8,2.17,2.95,2.23],["Te Atat\u016b South-Central",3,1002,-36.8699,174.6443,16.2,6.6,3.1,4.7,114400,7.1,1075.8,2.78,3.11,1.32,0.5],["M\u0101ngere North",2,675,-36.9588,174.7933,14.2,12.0,3.6,9.0,94200,28.3,726.9,4.49,5.85,1.12,1.44],["Dannemora North-Shamrock Park",3,741,-36.9258,174.9258,19.4,8.5,3.0,4.6,98800,2.8,801.1,2.69,1.56,1.26,1.4],["Mount Wellington North West",1,1188,-36.8947,174.8282,36.1,2.8,2.2,9.2,85200,7.6,1284.8,1.68,0.58,2.32,1.82],["Mairangi Bay North",3,939,-36.7383,174.7489,12.5,5.8,3.0,1.9,130100,3.2,1015.7,4.82,2.49,3.88,0.37],["Glen Eden Woodglen",3,1026,-36.9137,174.6447,16.7,5.3,3.0,5.5,114100,8.4,1118.9,0.69,3.61,4.21,1.75],["Hatfields Beach",3,546,-36.5708,174.6914,17.6,3.8,2.7,1.1,120300,3.3,591.4,3.96,1.76,5.71,1.97],["Mission Bay",3,1107,-36.8509,174.8339,26.3,2.4,2.4,2.8,147900,2.7,1199.1,2.14,1.22,3.36,2.87],["Te Atat\u016b South-Edmonton",3,1011,-36.8628,174.6397,18.4,5.3,2.9,6.5,108000,9.4,1098.3,2.29,2.5,1.18,0.67],["Freemans Bay",1,1521,-36.853,174.7503,38.1,1.8,2.1,13.6,132800,4.2,1659.6,1.67,1.56,5.91,0.61],["\u014cwairaka West",1,1044,-36.8968,174.7089,20.7,4.3,2.8,9.8,114100,10.7,1136.7,5.34,2.38,0.51,1.8],["Kingsway",3,747,-36.6036,174.6873,13.3,4.8,3.0,2.1,134000,3.6,827.8,1.03,1.97,2.22,1.28],["Mount Roskill Central North",2,864,-36.9095,174.7429,14.2,7.6,3.3,8.7,93400,14.9,958.9,3.86,0.77,2.79,1.15],["Henderson Lincoln West",2,960,-36.8537,174.6267,14.1,7.2,3.3,7.2,100300,16.2,1067.0,1.6,2.59,0.47,0.6],["Massey Royal Road West",3,879,-36.8347,174.6121,11.6,6.8,3.3,3.9,109900,13.2,980.6,3.24,3.7,1.61,1.49],["Papakura Massey Park",2,792,-37.0675,174.955,17.8,9.5,3.4,11.2,86300,17.8,885.8,9.38,1.31,2.66,0.98],["Papatoetoe Central East",1,990,-36.9705,174.8601,23.0,9.4,3.0,10.9,97700,17.1,1115.8,3.81,1.23,2.66,0.05],["Castor Bay North",3,840,-36.7588,174.7659,13.9,4.6,2.9,2.2,157100,2.1,946.9,7.2,1.49,2.96,1.48],["Remuera East",3,903,-36.8749,174.8179,16.3,3.0,2.9,2.7,177000,3.0,1019.4,0.84,1.82,3.32,0.95],["Manurewa South",2,726,-37.0334,174.9027,19.4,10.3,3.6,11.1,85300,25.1,820.3,3.67,1.38,3.14,0.54],["Massey Central",3,900,-36.8383,174.605,12.7,6.7,3.3,4.8,106300,13.3,1018.3,2.96,4.25,2.0,2.05],["Remuera West",3,921,-36.8685,174.7844,16.0,3.3,2.8,3.0,169800,4.2,1045.9,2.2,0.69,4.71,0.86],["Herne Bay",3,1146,-36.8438,174.7306,30.4,1.3,2.3,5.1,167900,2.9,1305.9,3.3,3.15,5.85,0.4],["Mount Eden North",1,1284,-36.8744,174.7609,35.5,1.9,2.3,14.3,100800,7.7,1467.6,0.95,1.55,4.14,0.87],["Sunnyhills East",1,1191,-36.9017,174.892,23.7,5.0,2.8,5.4,96400,4.3,1363.6,1.51,2.95,1.36,1.47],["Mount Eden South",3,1197,-36.896,174.7541,14.0,4.3,3.0,4.1,156300,6.0,1371.4,3.38,2.24,2.39,1.34],["Torbay East",3,864,-36.6964,174.756,19.8,4.5,2.7,2.5,129900,1.7,991.2,0.5,1.9,5.76,2.46],["R\u0101nui Domain",2,984,-36.8648,174.6067,16.8,7.9,3.2,9.7,92500,15.5,1130.1,0.67,4.76,2.06,2.38],["New Windsor North",3,873,-36.9,174.711,12.4,8.9,3.4,2.9,121800,11.6,1003.3,5.43,2.29,0.92,1.49],["Sunnyhills West",3,699,-36.9005,174.8802,12.9,6.4,3.0,2.2,137600,4.3,804.4,1.82,4.01,2.38,1.61],["\u014ctara East",2,732,-36.9518,174.8845,8.6,19.3,4.5,10.1,89900,38.2,843.5,2.17,2.81,3.07,2.98],["Totara Vale North",3,936,-36.7612,174.7304,13.8,7.1,3.1,2.6,121000,8.7,1081.1,4.47,3.31,2.32,0.87],["Northpark North",3,915,-36.9164,174.9214,10.8,5.2,3.0,2.7,118300,1.6,1062.5,2.1,1.43,1.74,0.74],["Rothesay Bay",3,960,-36.723,174.7495,15.3,4.1,2.9,1.9,144000,2.8,1109.9,3.11,0.81,3.89,0.65],["Onehunga Central",1,1188,-36.9197,174.7867,30.1,2.5,2.4,11.9,106300,8.9,1374.3,0.21,4.31,1.54,0.44],["Favona West",2,687,-36.9538,174.7996,5.7,12.7,4.4,5.9,110100,31.5,798.3,4.09,5.61,1.65,1.84],["Sandringham North",3,1251,-36.8793,174.7399,18.2,2.9,2.8,7.8,138000,9.6,1459.7,2.32,1.24,3.36,0.65],["Howick Central",3,1233,-36.8988,174.9231,21.4,4.1,2.8,4.5,115800,4.1,1439.1,1.57,0.6,1.44,0.9],["Browns Bay South East",3,933,-36.7247,174.7386,11.9,6.8,3.1,2.3,130300,3.5,1090.0,3.47,1.24,2.9,1.12],["Totara Heights",3,816,-37.0007,174.9007,11.0,9.9,3.4,2.7,137100,11.7,955.0,0.6,2.42,2.28,1.88],["Greenlane South",1,1320,-36.9011,174.7995,23.6,3.0,2.7,9.0,118700,6.8,1548.1,0.98,2.14,2.47,1.41],["Lynfield Harbour View",3,537,-36.9307,174.7191,9.5,7.3,3.2,1.1,143300,4.5,630.5,5.98,2.81,4.37,0.69],["Summerland North",3,795,-36.8749,174.6139,12.8,5.7,3.1,2.7,125400,5.7,934.3,1.23,4.96,1.68,1.75],["Clover Park North",2,564,-36.9801,174.8883,5.3,16.5,4.4,7.0,99700,30.7,669.4,2.08,2.7,1.11,0.82],["Sunnyvale West-Parrs Park",2,708,-36.9015,174.6311,12.3,7.6,3.5,4.7,113800,15.5,841.2,2.11,4.95,2.71,2.33],["Farm Cove",3,693,-36.8941,174.8873,14.3,4.8,2.9,2.2,135300,3.0,826.3,2.34,3.53,1.84,1.96],["Half Moon Bay South East",3,945,-36.8943,174.9021,14.0,5.4,3.1,4.5,110300,7.9,1130.0,2.57,2.3,0.7,0.79],["Kelston South",2,783,-36.9047,174.6627,13.0,10.3,3.4,6.9,103500,18.5,937.1,1.21,2.14,4.08,0.55],["Windsor Park",1,651,-36.7398,174.7352,31.3,5.1,2.5,8.9,71400,3.7,779.2,5.17,2.55,2.77,1.57],["Milford West",1,1125,-36.7711,174.7627,25.9,3.2,2.5,6.6,110800,3.5,1349.0,6.38,0.23,1.88,0.34],["M\u0101ngere South",2,720,-36.9811,174.7983,5.0,20.0,4.6,5.5,116300,28.5,864.2,7.0,4.91,1.4,1.21],["Mount Albert South",3,765,-36.8908,174.7176,18.8,4.3,3.0,7.3,137000,5.1,920.4,4.67,1.38,1.05,1.69],["Rowandale East",2,885,-37.0252,174.8806,8.8,11.9,4.1,7.0,100100,25.6,1064.9,1.5,1.43,1.42,1.71],["Ellerslie South",3,873,-36.9005,174.8165,19.2,1.7,2.7,5.7,133800,5.8,1052.0,0.68,1.76,2.53,2.1],["Papatoetoe Central West",1,1074,-36.9775,174.8547,22.3,8.7,3.0,9.5,93200,18.7,1294.6,4.24,0.32,2.59,0.92],["Totara Vale South",3,1116,-36.7667,174.7284,16.1,5.6,3.0,4.2,108200,8.8,1353.0,3.92,3.31,1.95,1.32],["Avondale North West (Auckland)",3,864,-36.8867,174.6918,17.0,5.2,2.9,4.4,114600,12.2,1049.6,4.49,2.62,1.44,2.38],["Unsworth Heights West",3,834,-36.7599,174.7139,14.7,6.1,3.0,3.3,123200,4.3,1014.6,3.71,3.52,3.39,2.31],["Henderson Larnoch",2,942,-36.8555,174.6201,13.4,10.2,3.4,6.2,95200,18.0,1148.1,1.07,3.21,0.75,1.05],["Balmoral",3,1014,-36.888,174.745,20.4,3.6,2.9,7.8,134900,7.7,1292.0,2.78,1.89,3.51,1.06],["\u014ct\u0101huhu South",1,1035,-36.9489,174.8513,24.9,6.1,3.1,15.1,79400,20.9,1266.1,4.89,3.47,4.08,0.91],["Cheltenham",3,750,-36.8266,174.8084,26.0,2.8,2.5,5.7,142200,2.8,919.8,4.16,1.13,6.88,3.79],["Royal Oak West (Auckland)",3,852,-36.9109,174.7685,21.5,4.9,2.8,7.2,120400,6.0,1050.1,1.69,3.05,0.52,1.19],["Glenfield North",3,1071,-36.7734,174.7276,12.9,7.3,3.2,4.1,119700,8.7,1328.3,3.42,3.32,1.59,1.01],["Grey Lynn West",1,1035,-36.8648,174.7343,29.0,2.0,2.6,10.7,135600,7.3,1292.3,2.28,1.88,3.99,1.2],["\u014ct\u0101huhu East",2,612,-36.9364,174.858,16.2,10.3,3.4,5.9,114900,19.0,777.5,3.67,4.77,3.01,1.67],["Henderson North East",1,876,-36.8774,174.6387,25.0,5.1,2.8,10.2,87600,8.5,1093.0,2.66,4.04,0.56,0.67],["Mairangi Bay South",3,912,-36.7429,174.7504,12.5,5.9,3.1,1.7,151000,3.3,1138.5,5.32,3.0,4.04,0.44],["Torbay West",3,933,-36.6953,174.7427,18.6,4.8,2.9,3.9,122200,3.5,1172.5,0.71,1.14,5.01,2.5],["McLaren Memorial Park",2,981,-36.8995,174.624,13.1,8.3,3.3,5.8,102900,15.8,1237.0,2.77,5.62,2.6,2.24],["New Lynn South East",3,678,-36.9201,174.6874,18.6,3.5,2.8,4.2,104200,9.3,855.8,3.34,1.04,3.47,1.45],["Mount Eden West",3,1134,-36.8819,174.7541,19.6,3.4,2.8,7.3,145000,5.8,1433.0,1.85,2.4,3.61,0.53],["Wattle Downs North",2,774,-37.0396,174.8906,12.8,11.2,3.9,7.2,91600,26.0,978.8,3.1,2.0,2.21,1.62],["M\u0101ngere Mascot",2,711,-36.973,174.8077,11.4,19.4,4.3,12.7,105600,28.6,906.2,6.34,4.14,1.08,0.68],["Dannemora South",3,567,-36.9327,174.9235,9.0,9.0,3.2,2.2,129500,3.7,725.6,3.46,1.08,0.97,1.15],["Papatoetoe East",2,900,-36.9751,174.8739,12.0,11.7,3.5,8.0,98700,22.0,1152.9,2.76,1.91,1.55,1.27],["Mount Wellington West",3,954,-36.9105,174.8284,15.4,7.2,3.3,5.1,121100,13.2,1224.5,2.18,2.25,1.08,0.79],["Harania South",2,750,-36.9664,174.8155,14.4,18.4,4.3,11.0,94900,31.1,965.9,5.94,3.7,1.67,0.77],["Kohimarama Stadium",3,690,-36.8615,174.8403,17.8,2.6,2.8,0.9,182400,2.2,891.3,1.95,1.01,2.07,1.97],["Onehunga North",1,1329,-36.9125,174.7868,23.0,3.4,2.7,8.7,112400,8.5,1720.3,0.75,3.53,1.15,1.17],["Kingsland",3,1146,-36.8696,174.7458,23.0,2.1,2.6,5.9,152900,7.1,1484.3,1.32,2.12,4.36,1.03],["Papatoetoe North West",2,759,-36.9745,174.8426,12.6,13.0,3.8,7.9,100500,22.6,983.6,5.33,1.15,3.71,1.66],["Mount Eden East",3,948,-36.8834,174.761,21.2,2.5,2.8,7.8,142200,7.3,1240.7,1.94,1.97,3.19,1.04],["Papatoetoe West",2,1032,-36.9837,174.8473,13.4,10.5,3.5,7.7,104400,20.9,1350.7,4.42,0.67,3.01,1.87],["Papakura Eastburn",2,798,-37.0601,174.9634,11.3,11.3,3.8,11.6,82600,22.9,1046.0,9.2,2.06,3.0,1.73],["Oteha East",3,1062,-36.7169,174.7223,16.4,4.2,2.9,3.8,106300,3.1,1392.7,3.52,1.63,2.0,1.66],["Pakuranga Heights North West",3,831,-36.911,174.8913,13.0,5.4,3.1,3.8,114700,8.7,1090.2,0.49,3.1,1.91,1.83],["Mount Wellington Central",3,807,-36.9085,174.8497,17.8,8.6,3.1,10.4,116100,14.5,1069.4,3.62,2.57,1.02,1.12],["Birkdale North",3,771,-36.7883,174.7021,16.0,4.3,3.0,5.3,116500,7.4,1023.4,0.65,2.69,3.89,1.99],["Ellerslie East",3,1122,-36.893,174.8204,21.1,2.9,2.7,3.6,133700,4.5,1490.9,1.09,1.06,2.86,1.98],["Glendene North East",2,609,-36.8849,174.6567,14.3,10.3,3.4,5.2,112600,15.0,812.3,2.93,3.86,2.32,2.23],["Clendon Park North",2,702,-37.0238,174.8578,10.7,12.8,3.9,9.5,94300,26.2,937.0,0.68,3.42,1.29,0.9],["Goodwood Heights East",2,684,-36.9955,174.8999,8.3,13.6,3.6,1.9,140500,11.7,915.3,0.56,2.98,1.91,1.59],["Randwick Park East",2,684,-37.0227,174.9179,9.6,7.9,3.4,3.7,110600,14.4,915.3,3.41,1.94,3.62,1.68],["Sunnynook North",3,903,-36.7499,174.7414,11.3,5.0,3.1,2.1,122400,6.3,1213.0,6.05,3.24,3.23,1.03],["Milford Central",1,846,-36.7711,174.7675,26.2,1.8,2.3,5.4,121400,2.1,1200.4,6.79,0.27,2.27,0.16],["Kohimarama Bay",1,969,-36.8527,174.8412,27.2,1.2,2.3,2.5,135700,2.5,1307.1,1.49,1.44,2.86,2.87],["New Lynn Central South",1,1167,-36.9132,174.683,27.8,4.4,2.6,15.1,86400,11.9,1576.3,2.8,0.35,3.07,0.67],["Middlefield",3,783,-36.9417,174.9163,7.3,8.8,3.5,1.6,138900,4.9,1061.2,2.88,0.97,1.27,1.37],["New Lynn North",1,1020,-36.9024,174.677,20.0,5.9,2.9,9.8,92300,12.3,1376.0,2.46,1.2,2.81,0.85],["R\u0101nui South West",2,780,-36.8707,174.5948,9.2,9.6,3.6,3.6,119000,10.3,1057.8,1.87,6.0,3.29,3.51],["Avondale West (Auckland)",2,1098,-36.8969,174.6831,16.9,11.2,3.3,8.6,103800,16.7,1484.4,3.22,1.57,2.1,1.16],["Forrest Hill North",3,744,-36.758,174.7465,11.3,7.3,3.2,2.5,119600,5.2,1009.0,5.79,2.27,2.34,0.62],["Pukekohe Hospital",1,600,-37.2117,174.903,26.5,4.0,2.7,4.6,88600,4.5,816.7,7.11,2.47,0.78,0.81],["Papatoetoe North",2,1044,-36.9674,174.8466,14.7,9.8,3.4,7.4,99000,19.8,1421.9,4.97,1.55,3.8,1.31],["Bayview West (Auckland)",3,741,-36.7758,174.7022,13.0,6.5,3.0,2.1,126500,6.5,1009.6,1.66,4.03,3.76,1.96],["M\u0101ngere West",2,651,-36.9656,174.7909,6.0,22.1,4.7,7.2,102200,39.1,893.1,5.2,5.79,0.62,1.02],["Sutton Park",2,702,-36.9564,174.8206,5.6,22.2,4.8,8.1,109300,36.2,960.7,5.25,3.94,2.5,1.09],["Mount Wellington North East",3,726,-36.8945,174.8421,19.4,5.0,2.8,6.1,119400,9.1,998.6,2.9,1.02,2.1,1.71],["Grey Lynn North",3,1005,-36.8594,174.7371,20.3,1.8,2.7,4.6,175200,4.8,1386.1,2.15,2.47,4.62,0.76],["Lynfield Central",3,849,-36.9284,174.7209,12.7,6.7,3.2,4.4,124200,7.7,1172.9,5.77,2.51,4.18,0.39],["Hillsborough North (Auckland)",1,630,-36.9143,174.7637,35.2,3.8,2.5,8.7,83100,4.7,870.5,1.93,2.69,1.05,1.0],["Point Chevalier North",3,849,-36.8567,174.7042,19.4,2.5,2.7,3.2,167200,2.1,1174.4,5.06,1.69,3.99,1.54],["New Lynn Seabrook",1,993,-36.9184,174.6711,23.0,5.7,2.8,9.3,92500,10.2,1374.6,1.92,1.53,4.23,1.18],["Ferguson",2,558,-36.9664,174.8816,5.9,19.9,4.6,11.7,90300,41.1,776.1,1.86,2.69,2.39,1.92],["Sandringham East",1,1089,-36.8939,174.7382,20.9,3.9,2.8,9.2,113300,11.3,1522.8,3.66,1.66,2.86,1.22],["Takapuna South",3,786,-36.7958,174.7788,17.9,3.8,2.7,3.5,142300,5.4,1096.8,5.52,1.16,3.63,0.13],["Cape Hill",3,495,-37.1893,174.9111,13.3,3.0,3.0,0.6,138400,3.0,690.8,7.32,0.64,2.04,1.39],["Three Kings South",2,717,-36.913,174.7548,15.9,9.2,3.4,6.8,112600,12.9,1005.4,2.73,1.89,1.76,0.56],["Grey Lynn Central",3,1257,-36.8621,174.7427,24.3,3.3,2.6,5.1,173900,6.0,1765.6,1.58,2.51,4.71,0.69],["Te Papapa",3,1056,-36.9193,174.7968,18.8,4.0,2.8,7.4,130800,10.2,1485.5,1.1,4.15,2.26,1.25],["Wiri East",2,573,-37.0029,174.8909,13.6,7.3,3.3,10.9,82900,25.1,806.2,0.62,2.19,1.9,1.43],["Northpark South",3,690,-36.921,174.917,12.2,5.7,3.0,1.8,121100,3.0,974.6,2.54,1.51,1.12,1.15],["Papatoetoe South West",2,762,-36.9892,174.8484,11.4,14.2,3.7,7.0,102900,22.6,1081.2,3.81,1.1,2.88,2.33],["Randwick Park West",2,825,-37.0251,174.9151,10.2,8.0,3.7,8.7,85600,24.0,1171.6,3.5,1.72,3.45,1.32],["Puhinui North",2,1086,-36.9836,174.8625,14.9,10.5,3.4,5.2,106900,18.2,1543.5,3.29,0.9,1.69,1.45],["Ponsonby East",3,1218,-36.8521,174.7424,27.8,2.2,2.4,7.3,166900,4.7,1732.3,2.18,2.18,5.54,0.91],["Mount Roskill South East",2,852,-36.9266,174.7411,12.3,9.9,3.6,8.4,98300,21.2,1220.6,3.96,2.09,3.47,1.63],["Murrays Bay East",3,750,-36.7317,174.7525,14.8,3.6,2.9,1.6,137200,2.4,1074.6,4.08,1.82,4.09,0.85],["Takanini West",2,723,-37.0422,174.9223,12.9,10.8,3.6,10.6,93800,19.8,1053.4,5.47,2.94,1.47,0.73],["Mount Wellington South West",3,867,-36.9339,174.8464,13.1,7.6,3.2,5.1,133500,14.4,1242.8,4.37,5.0,2.35,1.26],["Pinehill North",3,621,-36.7277,174.7217,8.2,12.1,3.6,2.9,122600,5.7,890.5,4.46,1.0,1.36,0.46],["Takanini South",2,1122,-37.0446,174.9316,9.6,12.3,3.6,3.4,142000,10.2,1614.1,6.1,2.33,1.01,0.51],["Mount Wellington East",3,933,-36.9001,174.8369,14.1,5.8,3.1,5.4,115800,14.7,1343.2,2.44,1.17,1.5,1.04],["Massey Road West",2,882,-36.9644,174.8247,14.3,11.2,3.8,11.5,92400,28.3,1271.8,6.18,3.1,2.51,0.16],["New Lynn North West",1,1086,-36.908,174.6711,21.8,5.0,2.8,11.7,92300,10.5,1574.9,1.77,1.32,3.55,0.68],["Aorere South West",2,657,-36.9805,174.8374,11.0,12.8,3.7,6.8,111200,19.9,954.3,5.11,1.43,3.84,2.02],["Rowandale West",2,768,-37.0288,174.8722,9.8,14.1,4.2,9.3,96500,31.1,1116.8,1.1,2.25,0.59,1.46],["Westlake",1,957,-36.7767,174.755,23.8,3.4,2.7,8.7,111000,6.6,1393.0,5.55,1.0,1.01,1.12],["Wesley West",2,693,-36.8994,174.7258,13.0,8.7,3.5,12.3,77600,25.3,1012.8,4.8,1.27,1.91,0.52],["Botany Downs East",3,777,-36.9111,174.9218,17.4,4.6,2.9,2.8,114000,5.4,1147.1,1.74,0.84,1.86,0.68],["Weymouth East",2,597,-37.0398,174.8765,9.5,14.1,4.2,6.6,109700,25.2,885.3,2.34,2.62,1.15,2.72],["Mount Wellington South East",2,795,-36.9283,174.8571,14.3,10.2,3.5,7.3,92100,24.9,1179.5,3.24,4.76,2.25,2.1],["Oranga",2,732,-36.9122,174.8004,16.0,8.2,3.5,9.9,106500,21.9,1094.3,1.61,3.37,2.35,1.91],["Tamaki East",3,468,-36.8967,174.8661,14.7,5.8,3.1,7.5,102700,16.0,706.4,2.92,3.13,2.51,1.86],["Glendene North West",3,753,-36.8904,174.6485,13.9,6.0,3.1,4.2,108300,7.5,1142.0,2.31,4.0,2.05,1.82],["Wiri North",2,720,-36.9993,174.8824,16.7,9.2,3.5,13.1,81700,24.9,1094.7,1.1,2.82,1.27,0.82],["Conifer Grove East",1,714,-37.0463,174.9172,25.6,7.1,2.9,12.4,83300,16.5,1091.4,5.46,2.89,1.44,0.89],["Meadowbank East",3,984,-36.8702,174.8386,23.2,1.8,2.6,4.4,130300,4.6,1506.5,2.65,1.31,1.61,1.14],["Dingwall",2,714,-36.963,174.8603,9.2,13.4,3.7,4.3,117500,17.8,1096.8,3.76,2.0,3.31,0.85],["Burbank",2,735,-37.0211,174.868,9.8,15.9,4.4,8.7,100100,35.9,1133.4,0.31,2.51,1.26,0.54],["Ponsonby West",3,762,-36.851,174.7319,20.5,2.4,2.7,6.1,177200,6.3,1176.6,2.99,2.72,5.17,0.36],["Mount Wellington Ferndale",1,1041,-36.9035,174.8304,21.6,4.3,2.8,7.7,110000,11.8,1608.1,1.95,1.46,1.39,0.9],["Mount Roskill North East",1,660,-36.9039,174.7528,20.5,5.5,3.1,12.1,86300,16.7,1019.9,3.28,1.73,2.03,0.52],["Half Moon Bay North East",3,651,-36.8865,174.9042,7.8,6.9,3.4,1.9,115100,5.6,1007.7,3.44,2.68,1.44,1.48],["Westmere North",3,741,-36.854,174.718,14.2,2.8,3.0,3.3,200000,4.9,1148.7,3.96,1.86,4.42,1.21],["New Lynn South",3,852,-36.9229,174.6771,17.6,6.3,3.0,5.9,109800,8.1,1322.8,2.63,0.9,4.24,1.85],["Panmure West",0,126,-36.8982,174.8489,38.1,0.0,2.3,33.3,43100,11.9,195.8,3.49,1.75,1.86,1.62],["M\u0101ngere East",2,555,-36.9685,174.8349,9.2,17.3,4.1,3.4,117500,20.1,863.9,6.02,2.1,3.38,1.01],["Bucklands Beach Murvale",3,765,-36.8874,174.9145,8.2,9.8,3.5,1.6,120300,7.8,1191.3,2.89,2.06,1.48,1.45],["Royal Oak East (Auckland)",1,1002,-36.9113,174.7769,29.6,3.6,2.5,14.3,97900,9.2,1563.3,1.09,3.75,0.27,1.39],["Glenavon",2,771,-36.9107,174.7019,14.0,10.9,3.5,7.6,95200,18.3,1203.8,4.48,1.46,2.03,1.6],["Takanini McLennan",3,726,-37.0514,174.9387,13.2,6.2,3.2,6.7,112300,15.0,1136.2,7.08,1.43,0.76,0.87],["Favona East",2,702,-36.9539,174.8139,5.6,21.8,4.5,5.0,134200,26.6,1104.4,4.68,4.57,2.22,1.6],["Tamaki West",2,753,-36.8933,174.8594,19.5,7.2,3.1,12.1,88000,20.5,1189.4,3.62,2.48,1.97,1.66],["Papakura East",2,747,-37.0599,174.9708,11.2,12.9,3.8,5.7,109500,16.3,1185.3,9.63,2.71,3.64,2.37],["Hillsborough Central (Auckland)",3,711,-36.9207,174.7549,11.0,8.0,3.3,2.2,135300,9.2,1127.0,2.65,2.27,2.08,1.41],["Grafton",1,513,-36.8583,174.7691,30.4,1.2,2.4,16.2,122100,8.9,823.8,1.18,1.35,5.76,1.14],["Mission Bay Eastridge",3,636,-36.8627,174.8322,23.6,2.8,2.5,3.8,149800,3.3,1025.9,2.64,0.33,2.51,1.56],["Aorere Central",2,453,-36.9759,174.829,8.6,20.5,4.3,5.0,117100,28.4,730.8,5.93,2.23,2.97,1.2],["Glenfield East",3,672,-36.779,174.7336,12.1,6.2,3.2,3.2,118500,11.2,1086.5,3.64,2.88,0.93,1.01],["Greenlane Central",3,702,-36.8941,174.7961,15.0,4.3,3.0,3.9,154200,5.5,1137.7,1.28,1.36,2.64,0.57],["Papatoetoe North East",2,900,-36.9693,174.8679,13.7,11.7,3.5,7.1,99200,20.9,1476.6,3.1,1.77,2.36,0.66],["Aorere South East",2,612,-36.9832,174.8394,7.8,15.2,4.0,4.8,112300,22.3,1004.5,4.76,1.29,3.71,2.35],["Weymouth Central",2,663,-37.0391,174.8704,9.5,10.4,4.0,5.3,118500,21.3,1094.5,2.07,2.97,0.78,2.47],["Saint Johns East",1,1029,-36.8759,174.8455,23.6,2.9,2.6,7.2,111800,7.0,1699.3,2.99,2.02,0.86,0.72],["\u014ctara South",2,564,-36.9714,174.8819,6.9,16.5,4.5,10.7,93200,36.6,932.0,1.95,2.72,1.83,1.7],["Puhinui East",2,714,-36.981,174.8758,13.0,13.4,3.5,7.1,107800,20.0,1182.5,2.55,2.0,0.88,0.97],["Homai East",2,777,-37.012,174.8869,11.6,10.8,3.6,7.4,103700,21.0,1293.1,1.68,1.4,2.73,2.13],["Epsom South",3,798,-36.9054,174.7661,16.9,4.5,2.8,3.8,138700,5.6,1338.3,2.22,2.85,0.89,0.97],["Clendon Park West",2,696,-37.0336,174.8576,8.2,15.1,4.1,6.5,107700,25.5,1171.5,1.52,3.66,0.89,1.88],["Blockhouse Bay North",3,768,-36.9114,174.6949,17.2,7.0,3.1,7.3,107300,11.7,1293.0,3.86,0.84,2.3,1.04],["Henderson North",1,669,-36.8736,174.629,26.9,4.5,2.9,11.8,79300,14.0,1130.6,1.71,4.02,0.5,0.81],["Eden Terrace",1,1530,-36.8652,174.7583,39.4,0.6,1.9,16.1,116600,5.1,2589.5,0.16,1.92,5.19,1.12],["Eden Valley",1,750,-36.8741,174.7523,29.2,3.2,2.5,11.4,120600,5.6,1284.2,1.13,2.31,4.45,0.38],["Te Atat\u016b South-McLeod North",3,708,-36.8725,174.6542,18.2,4.7,2.9,5.5,104000,8.9,1216.0,3.7,3.32,2.0,1.03],["Grey Lynn East",1,765,-36.8608,174.7483,31.4,1.6,2.2,10.5,141800,4.7,1319.4,1.18,2.23,5.16,0.27],["Bucklands Beach Central",3,621,-36.8788,174.9062,13.0,6.3,3.1,1.5,121900,4.3,1073.3,4.08,3.25,2.27,2.3],["New Windsor East",2,660,-36.9079,174.7195,10.0,8.2,3.5,4.8,115300,18.4,1146.7,5.89,1.33,2.07,0.79],["Mount Wellington Hamlin",3,777,-36.9094,174.8354,18.1,7.7,3.2,9.2,120200,15.0,1364.0,2.63,2.14,0.6,0.16],["Blockhouse Bay East",3,669,-36.925,174.7096,21.5,9.9,3.1,11.2,108100,7.7,1191.6,5.39,2.66,3.59,1.19],["Redcastle",3,771,-36.9409,174.9054,14.4,7.8,3.1,2.4,129300,6.2,1387.9,2.7,0.95,1.33,1.3],["Papakura West",1,633,-37.058,174.9332,29.9,4.7,2.6,9.4,82800,9.9,1129.2,7.35,0.97,0.53,0.72],["Armoy",3,786,-36.9426,174.9105,17.9,5.7,3.0,5.1,111100,6.8,1403.7,2.61,0.97,1.35,1.38],["Mount Roskill White Swan",3,702,-36.9183,174.7285,16.7,6.8,3.2,6.8,113400,12.0,1255.4,5.0,1.19,3.46,0.93],["Castor Bay South",3,708,-36.7647,174.7625,16.9,3.4,2.9,3.0,159300,3.8,1271.7,6.63,0.86,2.28,0.89],["Papakura North East",2,639,-37.054,174.9574,14.1,8.5,3.4,4.1,100700,14.1,1149.1,8.34,1.86,2.38,1.55],["Point England South",2,621,-36.8879,174.8643,19.3,7.2,3.2,13.1,99300,22.5,1118.5,3.77,2.91,1.56,1.42],["Homai Central",2,774,-37.018,174.8813,13.2,9.3,3.6,11.2,92500,20.5,1424.3,1.53,1.4,2.03,1.54],["Stonefields West",3,747,-36.8868,174.8383,17.3,3.6,2.8,1.2,160300,2.0,1377.7,2.45,0.7,1.93,1.45],["New Windsor South",3,552,-36.9092,174.7122,14.1,6.5,3.3,3.9,115200,9.7,1022.9,5.4,1.98,1.91,1.43],["Oteha West",3,657,-36.7218,174.718,11.4,12.3,3.4,3.8,113000,5.1,1240.8,4.17,0.97,1.35,1.13],["Blockhouse Bay North East",3,669,-36.9139,174.7075,13.0,10.3,3.2,3.7,114300,8.5,1265.9,4.99,1.99,2.36,1.88],["One Tree Hill Oranga",3,762,-36.9054,174.7976,21.7,4.7,2.7,6.9,129200,8.6,1442.5,1.37,2.61,2.15,1.82],["Greenlane North",3,636,-36.8886,174.7888,13.7,5.7,3.2,4.3,133500,6.6,1208.5,2.13,1.09,2.72,0.44],["Puhinui South",2,591,-36.9885,174.8594,9.1,13.2,3.9,5.6,120000,21.5,1123.3,3.32,1.06,1.9,1.98],["Burswood",3,525,-36.9223,174.8973,10.3,4.6,2.9,1.8,120300,6.3,999.1,1.06,1.8,1.67,1.49],["Clover Park East",2,561,-36.9825,174.8972,7.5,17.6,4.2,5.1,103700,31.9,1073.5,1.76,2.38,1.59,1.25],["Eden Park",3,561,-36.8748,174.7456,18.2,2.1,2.7,4.9,155600,4.3,1108.3,1.61,1.85,4.04,0.64],["Avondale North East (Auckland)",3,780,-36.8892,174.7032,18.8,5.0,2.9,6.8,128400,8.5,1568.2,5.2,2.26,0.47,2.25],["Rongomai West",2,435,-36.9692,174.8888,5.5,21.4,4.6,8.2,98500,41.6,896.8,1.29,2.11,2.2,1.98],["Mount Roskill Nirvana",2,606,-36.9112,174.7244,9.4,8.4,3.5,5.1,119200,15.3,1253.5,5.43,0.94,2.62,0.82],["Homai West",2,558,-37.0193,174.8751,11.3,12.4,4.0,9.9,92000,30.2,1164.9,0.96,1.9,1.62,1.01],["Bucklands Beach South",3,540,-36.8928,174.9115,12.2,5.0,3.1,3.5,110300,6.1,1130.2,2.78,1.72,0.82,0.79],["Sandringham West",3,762,-36.8917,174.7296,15.7,4.3,3.0,4.9,137600,9.4,1598.3,3.93,1.3,2.1,1.03],["\u014cwairaka East",3,720,-36.8946,174.7219,18.3,2.9,3.0,5.7,113900,12.4,1515.6,4.65,1.62,1.42,1.14],["Sandringham Central",1,753,-36.8881,174.7324,19.9,5.2,2.9,10.7,107200,13.1,1592.5,3.47,1.03,2.4,0.57],["Donegal Park West",2,744,-36.9782,174.9066,20.2,11.3,3.3,7.9,95500,14.5,1580.9,1.49,1.58,1.66,2.21],["\u014ctara South West",2,405,-36.9672,174.8754,22.2,19.3,3.9,17.6,76100,32.1,871.8,2.42,2.43,2.35,1.36],["Clendon Park East",2,507,-37.0313,174.8641,9.5,12.4,4.0,11.7,84700,31.8,1096.1,1.13,3.02,0.32,1.53],["St Lukes",1,687,-36.8814,174.7314,20.5,3.1,2.8,12.3,110400,10.5,1488.2,3.06,0.49,2.58,0.36],["Victoria Park",0,1566,-36.8489,174.7567,37.4,0.8,1.9,39.6,98600,9.4,3495.4,1.08,0.86,6.62,0.57],["Stonefields East",3,714,-36.8897,174.8422,24.4,2.1,2.5,1.7,150700,2.5,1602.1,2.88,0.93,1.91,1.44],["Stillwater",3,312,-36.6368,174.717,13.5,3.8,2.8,0.0,140000,2.9,704.2,3.8,1.66,4.31,2.6],["Donegal Park East",2,417,-36.9784,174.9098,3.6,36.7,5.0,2.2,187000,9.6,954.0,1.62,1.55,1.59,2.46],["Huntington Park",1,780,-36.9332,174.9063,28.1,3.1,2.4,8.2,89200,4.7,1789.2,2.5,0.46,0.66,0.54],["Mount Eden North East",1,534,-36.8694,174.764,25.3,0.6,2.2,10.8,134900,4.5,1304.8,0.54,1.29,4.61,1.02],["\u014ct\u0101huhu North West",2,597,-36.9371,174.8447,19.1,6.5,3.2,17.7,62300,26.0,1562.2,4.68,4.85,2.67,0.88],["\u014ct\u0101huhu North East",2,525,-36.9367,174.8498,21.1,8.0,3.3,11.7,76600,25.3,1460.3,4.27,4.83,2.74,1.11],["Grafton West",1,648,-36.8642,174.7636,33.3,1.4,1.9,13.1,117700,7.9,2569.3,0.38,1.56,5.18,1.28],["Aorere North",2,300,-36.9742,174.8265,8.0,19.0,4.3,4.6,115900,24.5,909.1,6.2,2.48,2.71,0.97],["Massey Road South",2,363,-36.9725,174.8223,6.6,19.8,4.6,5.7,124200,34.1,1117.9,6.57,2.89,2.31,0.76],["Newmarket Park",1,555,-36.8682,174.7819,36.2,1.6,2.1,8.8,110300,3.8,1997.8,1.99,0.55,4.7,0.67],["Queen Street South West",0,1065,-36.854,174.7613,48.7,0.6,1.7,55.0,67500,7.7,4655.1,1.18,0.93,6.33,0.67],["Karangahape West",1,558,-36.8593,174.7551,36.0,0.0,1.9,22.3,115600,5.0,3298.2,0.85,1.72,5.72,0.55],["The Strand",1,426,-36.8498,174.7767,30.3,0.7,2.1,30.4,95700,7.0,2505.3,0.99,1.05,6.7,0.62],["Queen Street",0,873,-36.8474,174.7657,52.9,0.3,1.6,64.5,73000,8.4,5182.5,0.34,0.1,7.01,0.17],["Hobson Ridge South",0,705,-36.8545,174.7576,39.6,1.3,2.0,54.1,71800,10.4,4504.3,1.28,1.16,6.24,0.88],["Hobson Ridge North",0,1263,-36.8468,174.7628,47.5,0.2,1.7,58.8,77900,8.9,8463.6,0.49,0.27,7.1,0.27],["Symonds Street West",0,1482,-36.8569,174.7633,40.9,0.6,1.8,64.1,51600,10.1,10185.1,1.05,1.18,5.99,0.92],["Shortland Street",0,1167,-36.8477,174.7682,56.0,0.3,1.5,55.7,83700,4.5,9156.1,0.33,0.25,6.95,0.33],["Karangahape East",0,573,-36.8583,174.7588,47.1,0.5,1.8,36.5,86500,9.1,4920.3,0.85,1.46,5.92,0.87],["Anzac Avenue",0,1560,-36.8471,174.7717,47.7,0.2,1.7,54.4,78600,6.6,15236.5,0.45,0.53,7.0,0.23],["College Hill",1,258,-36.8462,174.7507,36.0,1.2,2.0,8.4,160100,2.3,2609.9,1.52,1.34,6.51,0.62],["Symonds Street North West",0,1308,-36.854,174.7655,54.8,0.2,1.6,77.2,44000,8.8,15024.6,1.05,0.84,6.27,0.6]],"s":[["W",-36.908,174.7557],["W",-36.9226,174.7834],["W",-36.8764,174.8284],["P",-36.9134,174.84],["W",-36.913,174.871],["N",-37.0222,174.8962],["W",-36.9095,174.6637],["W",-36.8698,174.7102],["W",-36.6363,174.7461],["W",-36.9707,174.8607],["W",-36.8833,174.7346],["W",-36.8487,174.7647],["N",-36.8464,174.7658],["W",-36.8114,174.7246],["N",-36.8804,174.7261],["W",-36.7817,174.7228],["W",-36.9975,174.789],["W",-36.8584,174.749],["W",-36.9866,174.8841],["W",-36.9135,174.9288],["W",-36.8187,174.6121],["W",-36.9073,174.6844],["W",-36.7961,175.0459],["F",-36.8509,174.8578],["W",-36.8439,174.7652],["W",-36.8709,174.7753],["W",-36.8438,174.7571],["F",-36.7927,175.0797],["N",-36.7882,174.7698],["N",-36.9646,174.9118],["N",-36.9339,174.9115],["N",-36.8721,174.7781],["F",-36.8659,174.7599],["F",-36.4191,174.7235],["N",-36.8702,174.713],["F",-36.8447,174.7677],["N",-36.8426,174.6523],["N",-36.7282,174.7105],["W",-36.8453,174.7728],["W",-36.8775,174.7519],["W",-36.9704,174.8007],["W",-36.8214,174.6143],["W",-36.9254,174.723],["W",-36.8893,174.7937],["W",-36.8542,174.7315],["N",-36.8819,174.7977],["W",-36.9449,174.8425],["P",-36.8771,174.6325],["P",-36.8578,174.628],["W",-36.9301,174.9109],["N",-36.9309,174.6791],["W",-36.8994,174.9082],["W",-36.7915,174.7655],["P",-36.7299,174.7067],["W",-36.7174,174.7473],["W",-36.7591,174.7397],["W",-37.1996,174.9022],["N",-36.9802,174.8534],["W",-37.059,174.9412],["W",-37.0643,174.9447],["P",-36.9101,174.7742],["W",-37.0475,174.9272],["P",-37.2052,174.8996],["P",-36.9684,174.7969],["W",-36.8657,174.6463],["N",-36.9086,174.7344],["P",-36.8759,174.8551],["N",-36.9109,174.6855],["W",-37.2106,174.912],["W",-36.3995,174.664],["W",-36.614,174.6811],["P",-36.6202,174.6735],["N",-36.8612,174.8291],["N",-36.8904,174.8319],["N",-36.8114,174.7116],["P",-37.0537,174.9306],["P",-36.9879,174.8807],["W",-36.8573,174.6317],["F",-36.919,174.7845],["N",-36.7749,174.5542],["W",-36.9041,174.7269],["W",-36.5883,174.6951],["P",-36.8205,174.6086],["W",-36.7967,174.7779],["P",-36.7789,174.7441],["W",-36.8795,174.8522],["W",-36.8961,174.9326],["N",-36.7159,174.7473],["W",-37.0175,174.864],["W",-36.6772,174.4512],["N",-36.3991,174.6669],["N",-36.5865,174.6936],["N",-36.8295,174.7962],["N",-37.2498,174.7283],["F",-36.8807,174.8119],["N",-36.7722,174.7648],["W",-36.7394,174.7528],["W",-36.7976,174.6478],["P",-36.9647,174.9149],["N",-36.6286,174.7326],["P",-36.8927,174.7061],["W",-36.9094,174.8372],["N",-37.0642,174.9408],["P",-37.0325,174.8674],["W",-36.9658,174.8241],["W",-36.8002,174.745],["W",-36.7318,174.7207],["N",-36.6852,174.7398],["N",-37.1895,174.9039],["N",-36.9039,174.925],["N",-36.7281,174.7105],["W",-36.8805,174.6323],["W",-36.7722,174.7663],["W",-37.0357,174.9081],["W",-37.245,175.0228],["N",-36.7991,174.6449],["W",-36.9919,174.8827],["W",-36.8466,174.7335],["P",-36.3922,174.6495],["N",-36.1121,174.5735],["P",-36.9306,174.9129],["W",-36.8898,175.0104],["P",-36.8993,174.9069],["F",-37.1377,174.7522],["F",-36.9151,174.8895],["F",-36.6615,174.4336],["F",-36.7759,174.5564],["F",-36.2936,174.5239],["F",-36.2944,174.5236],["F",-36.7896,174.695],["F",-36.3519,174.7168],["F",-36.7827,175.0098],["F",-36.9982,174.8947],["F",-36.606,174.6984],["F",-37.1878,174.8287],["F",-36.9042,174.9393],["F",-36.9651,174.9024],["F",-36.1608,174.444],["F",-36.8639,174.6141],["F",-37.0211,174.8645],["F",-36.911,174.6516],["F",-36.6153,174.792],["F",-36.1112,174.352],["F",-36.8978,174.8097],["F",-36.695,174.7507],["F",-36.0949,174.5868]],"g":[["Victoria Park",0,1566,"No walkable top-up format",1.08,0.57],["Symonds Street West",0,1482,"No walkable top-up format",1.05,0.92],["Manly East",1,1359,"No Foodstuffs banner nearby",2.81,1.51],["Symonds Street North West",0,1308,"No walkable top-up format",1.05,0.6],["Unsworth Heights East",1,1296,"No Foodstuffs banner nearby",3.22,1.95],["Helensville",1,1137,"No Foodstuffs banner nearby",2.27,0.27],["Queen Street South West",0,1065,"No walkable top-up format",1.18,0.67],["\u014ct\u0101huhu South",1,1035,"No Foodstuffs banner nearby",3.47,0.91],["M\u0101ngere Bridge",1,972,"No Foodstuffs banner nearby",2.65,2.28],["Albany West",1,915,"No Foodstuffs banner nearby",2.07,3.17],["Surfdale",1,756,"No Foodstuffs banner nearby",2.75,1.61],["Ostend",1,729,"No Foodstuffs banner nearby",2.75,0.3],["Henderson Central",0,729,"No walkable top-up format",2.68,0.54],["Glendowie South East",1,726,"No Foodstuffs banner nearby",2.49,2.89],["Hobson Ridge South",0,705,"No walkable top-up format",1.28,0.88],["Windsor Park",1,651,"No Foodstuffs banner nearby",2.55,1.57],["Symonds Street East",0,600,"No walkable top-up format",1.26,0.85],["Oneroa East-Palm Beach",1,480,"No Foodstuffs banner nearby",3.0,2.15],["Manukau Central",1,411,"No Foodstuffs banner nearby",3.14,2.91],["Piha",1,381,"No Foodstuffs banner nearby",16.54,16.84],["\u014ct\u0101huhu Central",1,342,"No Foodstuffs banner nearby",3.37,0.26],["Panmure West",0,126,"No walkable top-up format",3.49,1.62]]}</script>
+<script>
+(function(){
+"use strict";
+var D = JSON.parse(document.getElementById("payload").textContent);
+var SEG = D.seg, C = D.c, S = D.s, G = D.g;
+var SC = ["#3987e5","#d95926","#199e70","#c98500","#d55181"];
+var RAMP = ["#1c5cab","#256abf","#3987e5","#5598e7","#86b6ef","#b7d3f6","#cde2fb"];
+// column indices into a catchment row
+var NAME=0,SEGI=1,HH=2,LAT=3,LON=4,ONE=5,MULTI=6,RES=7,NOVEH=8,INC=9,CROWD=10,DENS=11,KF=12,KN=13,KP=14,KW=15;
+
+var MEASURES = [
+  {k:"No vehicle",      i:NOVEH, fmt:function(v){return v.toFixed(1)+"%";}},
+  {k:"To Four Square",  i:KF,    fmt:function(v){return v.toFixed(2)+" km";}},
+  {k:"To Woolworths",   i:KW,    fmt:function(v){return v.toFixed(2)+" km";}},
+  {k:"Living alone",    i:ONE,   fmt:function(v){return v.toFixed(1)+"%";}},
+  {k:"Crowding",        i:CROWD, fmt:function(v){return v.toFixed(1)+"%";}},
+  {k:"Median income",   i:INC,   fmt:function(v){return "$"+v.toLocaleString();}},
+  {k:"Households",      i:HH,    fmt:function(v){return v.toLocaleString();}}
+];
+var mIdx = 0;
+
+function $(id){return document.getElementById(id);}
+function money(m){
+  if(m >= 1000) return "$" + (m/1000).toFixed(2) + "bn";
+  return "$" + m.toFixed(m < 10 ? 2 : 1) + "m";
+}
+
+/* ---------- projection ---------- */
+var lats = C.map(function(r){return r[LAT];}), lons = C.map(function(r){return r[LON];});
+var la0 = Math.min.apply(null,lats), la1 = Math.max.apply(null,lats);
+var lo0 = Math.min.apply(null,lons), lo1 = Math.max.apply(null,lons);
+var kx = Math.cos((la0+la1)/2 * Math.PI/180);
+
+function makeProj(w,h,pad){
+  var dx = (lo1-lo0)*kx, dy = (la1-la0);
+  var sc = Math.min((w-2*pad)/dx, (h-2*pad)/dy);
+  var ox = (w - dx*sc)/2, oy = (h - dy*sc)/2;
+  return function(lat,lon){
+    return [ox + (lon-lo0)*kx*sc, oy + (la1-lat)*sc];
+  };
+}
+
+/* ---------- tooltip ---------- */
+var tip = $("tip");
+function showTip(e, html){
+  tip.innerHTML = html;
+  tip.style.opacity = "1";
+  var r = tip.getBoundingClientRect();
+  var x = e.clientX + 14, y = e.clientY + 14;
+  if(x + r.width > window.innerWidth - 8) x = e.clientX - r.width - 14;
+  if(y + r.height > window.innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = Math.max(8,x) + "px";
+  tip.style.top = Math.max(8,y) + "px";
+}
+function hideTip(){ tip.style.opacity = "0"; }
+document.addEventListener("scroll", hideTip, {passive:true});
+
+/* ---------- main map ---------- */
+var W=900, H=640, PAD=28;
+var proj = makeProj(W,H,PAD);
+var NS = "http://www.w3.org/2000/svg";
+function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+function storeMark(b, x, y){
+  if(b==="F") return el("rect",{x:x-3.4,y:y-3.4,width:6.8,height:6.8,fill:"#e5894a",stroke:"#070b12","stroke-width":1});
+  if(b==="N") return el("polygon",{points:(x)+","+(y-4.2)+" "+(x+3.9)+","+(y+3.2)+" "+(x-3.9)+","+(y+3.2),fill:"#5ad3a4",stroke:"#070b12","stroke-width":1});
+  if(b==="P") return el("polygon",{points:(x)+","+(y-4.4)+" "+(x+4.4)+","+y+" "+x+","+(y+4.4)+" "+(x-4.4)+","+y,fill:"#c98500",stroke:"#070b12","stroke-width":1});
+  return el("circle",{cx:x,cy:y,r:3.4,fill:"none",stroke:"#93a6b8","stroke-width":1.5});
+}
+var BN = {F:"Four Square", N:"New World", P:"Pak'nSave", W:"Woolworths"};
+
+function drawMap(){
+  var m = MEASURES[mIdx];
+  var vals = C.map(function(r){return r[m.i];});
+  var lo = Math.min.apply(null,vals), hi = Math.max.apply(null,vals);
+
+  /* Quantile bins, not a linear stretch. Every measure here is heavily
+     right-skewed — most catchments sit near zero on no-vehicle share, a
+     handful above 50% — and a linear ramp collapses the whole map into one
+     colour. Equal-count bins put the same number of catchments in each step,
+     so the map shows rank rather than absolute magnitude. The legend states
+     the range so the compression is visible rather than hidden. */
+  var sorted = vals.slice().sort(function(a,b){return a-b;});
+  var BINS = RAMP.length;
+  var cuts = [];
+  for(var q = 1; q < BINS; q++){
+    cuts.push(sorted[Math.floor(sorted.length * q / BINS)]);
+  }
+  function bin(v){
+    for(var i = 0; i < cuts.length; i++){ if(v < cuts[i]) return i; }
+    return BINS - 1;
+  }
+
+  var svg = $("svg-map");
+  svg.textContent = "";
+
+  var g = el("g",{});
+  C.forEach(function(r){
+    var p = proj(r[LAT], r[LON]);
+    var col = RAMP[bin(r[m.i])];
+    var rad = 3.4 + Math.sqrt(r[HH]) / 19;
+    var c = el("circle",{cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:rad.toFixed(1),
+      fill:col,"fill-opacity":.82,stroke:"#070b12","stroke-width":.6});
+    c.style.cursor = "crosshair";
+    c.addEventListener("mouseenter", function(e){
+      showTip(e, "<b>"+r[NAME]+"</b>"+
+        "<em>"+SEG[r[SEGI]]+"</em><br>"+
+        m.k+": "+m.fmt(r[m.i])+"<br>"+
+        r[HH].toLocaleString()+" households<br>"+
+        "<em>FS "+r[KF].toFixed(2)+"km · WW "+r[KW].toFixed(2)+"km</em>");
+    });
+    c.addEventListener("mousemove", function(e){ showTip(e, tip.innerHTML); });
+    c.addEventListener("mouseleave", hideTip);
+    g.appendChild(c);
+  });
+  svg.appendChild(g);
+
+  var gs = el("g",{});
+  S.forEach(function(s){
+    var p = proj(s[1], s[2]);
+    var mk = storeMark(s[0], p[0], p[1]);
+    mk.style.cursor = "crosshair";
+    mk.addEventListener("mouseenter", function(e){ showTip(e, "<b>"+BN[s[0]]+"</b><em>store location</em>"); });
+    mk.addEventListener("mouseleave", hideTip);
+    gs.appendChild(mk);
+  });
+  svg.appendChild(gs);
+
+  $("ramp-lo").textContent = m.fmt(lo);
+  $("ramp-hi").textContent = m.fmt(hi);
+  $("ramp-bar").title = "Equal-count bins. Break points: " +
+    cuts.map(function(c){return m.fmt(c);}).join(" · ");
+  $("ramp-bar").innerHTML = RAMP.map(function(c){return '<span style="background:'+c+'"></span>';}).join("");
+  $("map-stat").textContent = "606 shown · " + m.k.toLowerCase();
+}
+
+function buildMeasures(){
+  var wrap = $("measure-ctrls");
+  MEASURES.forEach(function(m,i){
+    var b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = m.k;
+    b.setAttribute("aria-pressed", i === mIdx ? "true" : "false");
+    b.addEventListener("click", function(){
+      mIdx = i;
+      Array.prototype.forEach.call(wrap.children, function(c,j){
+        c.setAttribute("aria-pressed", j === i ? "true" : "false");
+      });
+      drawMap();
+    });
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- facets ---------- */
+function drawFacets(){
+  var wrap = $("facets");
+  wrap.textContent = "";
+  var fw = 180, fh = 210;
+  var fp = makeProj(fw,fh,8);
+  SEG.forEach(function(name, si){
+    var box = document.createElement("div");
+    box.className = "facet";
+    var h = document.createElement("h3");
+    h.textContent = name; h.style.color = SC[si];
+    var members = C.filter(function(r){return r[SEGI]===si;});
+    var hh = members.reduce(function(a,r){return a+r[HH];},0);
+    var meta = document.createElement("div");
+    meta.className = "fm";
+    meta.textContent = members.length + " areas · " + hh.toLocaleString() + " hh";
+    var svg = el("svg",{viewBox:"0 0 "+fw+" "+fh,role:"img","aria-label":name+": "+members.length+" catchments"});
+    svg.style.width = "100%"; svg.style.height = "auto"; svg.style.display = "block";
+    C.forEach(function(r){
+      var p = fp(r[LAT], r[LON]);
+      svg.appendChild(el("circle",{cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:1.3,fill:"#233042"}));
+    });
+    members.forEach(function(r){
+      var p = fp(r[LAT], r[LON]);
+      svg.appendChild(el("circle",{cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:2.6,fill:SC[si],"fill-opacity":.9}));
+    });
+    box.appendChild(h); box.appendChild(meta); box.appendChild(svg);
+    wrap.appendChild(box);
+  });
+}
+
+/* ---------- segment profile ---------- */
+var FEATS = [
+  {k:"Living alone", i:ONE, f:function(v){return v.toFixed(1)+"%";}},
+  {k:"Multi-family", i:MULTI, f:function(v){return v.toFixed(1)+"%";}},
+  {k:"Average residents", i:RES, f:function(v){return v.toFixed(2);}},
+  {k:"No motor vehicle", i:NOVEH, f:function(v){return v.toFixed(1)+"%";}},
+  {k:"Median income", i:INC, f:function(v){return "$"+Math.round(v/1000)+"k";}},
+  {k:"Crowded households", i:CROWD, f:function(v){return v.toFixed(1)+"%";}},
+  {k:"Households per km²", i:DENS, f:function(v){return Math.round(v).toLocaleString();}}
+];
+
+/* Unweighted mean of the SA2 rates — the cluster-centroid convention, and
+   the same basis as the archetype table in the written study. Weighting by
+   households would give different numbers and contradict the deck. */
+function segAgg(idx){
+  return SEG.map(function(_, si){
+    var ms = C.filter(function(r){return r[SEGI]===si;});
+    return ms.reduce(function(a,r){return a + r[idx];},0) / ms.length;
+  });
+}
+
+function drawProfile(){
+  var wrap = $("profile-body");
+  wrap.textContent = "";
+  FEATS.forEach(function(ft){
+    var vals = segAgg(ft.i);
+    var max = Math.max.apply(null, vals);
+    var block = document.createElement("div");
+    block.className = "feat";
+    var h = document.createElement("h3"); h.textContent = ft.k;
+    block.appendChild(h);
+    SEG.forEach(function(name, si){
+      var row = document.createElement("div"); row.className = "brow";
+      var n = document.createElement("div"); n.className = "bname"; n.textContent = name; n.title = name;
+      var tr = document.createElement("div"); tr.className = "btrack";
+      var fi = document.createElement("div"); fi.className = "bfill";
+      fi.style.width = (max > 0 ? (vals[si]/max*100) : 0).toFixed(1) + "%";
+      fi.style.background = SC[si];
+      tr.appendChild(fi);
+      var v = document.createElement("div"); v.className = "bval"; v.textContent = ft.f(vals[si]);
+      row.appendChild(n); row.appendChild(tr); row.appendChild(v);
+      block.appendChild(row);
+    });
+    wrap.appendChild(block);
+  });
+}
+
+/* ---------- distance matrix ---------- */
+function median(a){
+  var s = a.slice().sort(function(x,y){return x-y;});
+  var m = Math.floor(s.length/2);
+  return s.length % 2 ? s[m] : (s[m-1]+s[m])/2;
+}
+function drawMatrix(){
+  var banners = [{k:"Four Square",i:KF},{k:"New World",i:KN},{k:"Pak'nSave",i:KP},{k:"Woolworths",i:KW}];
+  var grid = SEG.map(function(_, si){
+    var ms = C.filter(function(r){return r[SEGI]===si;});
+    return banners.map(function(b){ return median(ms.map(function(r){return r[b.i];})); });
+  });
+  var flat = grid.reduce(function(a,r){return a.concat(r);},[]);
+  var lo = Math.min.apply(null,flat), hi = Math.max.apply(null,flat);
+
+  var t = document.createElement("table");
+  var thead = document.createElement("thead");
+  var hr = document.createElement("tr");
+  hr.appendChild(document.createElement("th"));
+  banners.forEach(function(b){
+    var th = document.createElement("th"); th.textContent = b.k; th.style.textAlign = "center";
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr); t.appendChild(thead);
+
+  var tb = document.createElement("tbody");
+  SEG.forEach(function(name, si){
+    var tr = document.createElement("tr");
+    var th = document.createElement("th"); th.textContent = name; th.title = name;
+    tr.appendChild(th);
+    grid[si].forEach(function(v, bi){
+      var td = document.createElement("td");
+      td.className = "cell";
+      // sequential: nearer = brighter, because nearer is the good outcome
+      var norm = hi > lo ? 1 - (v-lo)/(hi-lo) : 0;
+      var col = RAMP[Math.min(RAMP.length-1, Math.floor(norm*RAMP.length))];
+      td.style.background = col;
+      td.style.color = norm > 0.55 ? "#08111d" : "#e8eef4";
+      td.textContent = v.toFixed(2);
+      td.title = name + " → " + banners[bi].k + ": " + v.toFixed(2) + " km median";
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  $("matrix-body").textContent = "";
+  $("matrix-body").appendChild(t);
+}
+
+/* ---------- gap shortlist ---------- */
+var sortKey = 2, sortDir = -1;
+function drawGaps(){
+  var cols = [
+    {k:"Catchment", n:false},
+    {k:"Archetype", n:false},
+    {k:"Households", n:true},
+    {k:"Gap", n:false},
+    {k:"Nearest FS", n:true},
+    {k:"Nearest WW", n:true}
+  ];
+  var rows = G.slice().sort(function(a,b){
+    var x = a[sortKey], y = b[sortKey];
+    if(typeof x === "string") return sortDir * x.localeCompare(y);
+    return sortDir * (x - y);
+  });
+  var t = $("gap-table");
+  t.textContent = "";
+  var thead = document.createElement("thead");
+  var hr = document.createElement("tr");
+  cols.forEach(function(c, i){
+    var th = document.createElement("th");
+    th.textContent = c.k;
+    if(c.n) th.style.textAlign = "right";
+    if(i === sortKey) th.setAttribute("aria-sort", sortDir < 0 ? "descending" : "ascending");
+    th.addEventListener("click", function(){
+      if(sortKey === i) sortDir = -sortDir; else { sortKey = i; sortDir = c.n ? -1 : 1; }
+      drawGaps();
+    });
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr); t.appendChild(thead);
+  var tb = document.createElement("tbody");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr");
+    function cell(txt, cls){
+      var td = document.createElement("td");
+      if(cls) td.className = cls;
+      td.textContent = txt; tr.appendChild(td); return td;
+    }
+    cell(r[0]);
+    var td = document.createElement("td");
+    var pill = document.createElement("span");
+    pill.className = "pill";
+    var sw = document.createElement("i"); sw.style.background = SC[r[1]];
+    pill.appendChild(sw);
+    pill.appendChild(document.createTextNode(SEG[r[1]]));
+    td.appendChild(pill); tr.appendChild(td);
+    cell(r[2].toLocaleString(), "n");
+    cell(r[3]);
+    cell(r[4].toFixed(2), "n");
+    cell(r[5].toFixed(2), "n" + (r[5] < r[4] ? " closer" : ""));
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+}
+
+/* ---------- sensitivity ---------- */
+var POOL = 171.6, WHOLESALE = 0.85, MARGIN = 0.0317, FSNI_EBIT = 292, CAPEX_GAIN = 12.7;
+function drawSens(){
+  var rate = +$("rate").value;
+  var retail = POOL * rate / 100;
+  var rev = retail * WHOLESALE;
+  var ebit = rev * MARGIN;
+  $("rate-v").textContent = rate + "%";
+  $("s-retail").textContent = money(retail);
+  $("s-rev").textContent = money(rev);
+  $("s-ebit").textContent = "$" + ebit.toFixed(2) + "m";
+  $("s-share").textContent = (ebit / FSNI_EBIT * 100).toFixed(2) + "% of EBIT";
+  $("s-mult").textContent = (CAPEX_GAIN / ebit).toFixed(0) + "× the leverage";
+}
+
+/* ---------- boot ---------- */
+buildMeasures();
+drawMap();
+drawFacets();
+drawProfile();
+drawMatrix();
+drawGaps();
+$("rate").addEventListener("input", drawSens);
+drawSens();
+window.addEventListener("resize", function(){ hideTip(); });
+})();
+</script>
+
+</body>
+</html>

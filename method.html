@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Pavithra Bamunu">
+<meta name="description" content="The Python, R, SQL and Excel output behind the Auckland catchment mission-fit study.">
+<style>
+:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Catchment Mission Fit Results</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#f1f4f2;
+  --surface:#ffffff;
+  --sunken:#e7ebe8;
+  --ink:#141d19;
+  --ink-2:#3d4a45;
+  --muted:#65746d;
+  --rule:#d5ddd8;
+  --rule-soft:#e4eae6;
+  --accent:#1c6b51;
+  --accent-soft:#d9e8e1;
+  --ran:#1c6b51;
+  --held:#8a5a12;
+  --pending:#6a7671;
+  --shadow:0 1px 2px rgba(20,29,25,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0e1412;
+    --surface:#161d1a;
+    --sunken:#1b2320;
+    --ink:#e4ebe7;
+    --ink-2:#b3c0ba;
+    --muted:#8b9992;
+    --rule:#2a332f;
+    --rule-soft:#222a27;
+    --accent:#52b992;
+    --accent-soft:#1d3229;
+    --ran:#52b992;
+    --held:#d3a057;
+    --pending:#7d8b85;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0e1412;
+  --surface:#161d1a;
+  --sunken:#1b2320;
+  --ink:#e4ebe7;
+  --ink-2:#b3c0ba;
+  --muted:#8b9992;
+  --rule:#2a332f;
+  --rule-soft:#222a27;
+  --accent:#52b992;
+  --accent-soft:#1d3229;
+  --ran:#52b992;
+  --held:#d3a057;
+  --pending:#7d8b85;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Serif",Georgia,serif;
+  font-size:16px;
+  line-height:1.62;
+  margin:0;
+  padding-block:0 64px;
+  padding-inline:20px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px;margin:0 auto}
+
+h1,h2,h3,.ui{font-family:"IBM Plex Sans",system-ui,sans-serif}
+h1{
+  font-size:clamp(28px,5.2vw,40px);
+  line-height:1.14;
+  font-weight:600;
+  letter-spacing:-.018em;
+  margin:0 0 14px;
+  text-wrap:balance;
+}
+h2{
+  font-size:clamp(20px,3.4vw,25px);
+  font-weight:600;
+  letter-spacing:-.012em;
+  margin:0;
+  text-wrap:balance;
+}
+h3{
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:.005em;
+  margin:26px 0 10px;
+  color:var(--ink);
+}
+p{margin:0 0 15px;max-width:66ch}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+strong{font-weight:500;color:var(--ink)}
+
+.eyebrow{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* ---------- masthead ---------- */
+header.masthead{padding-block:52px 34px;border-bottom:2px solid var(--ink);margin-bottom:0}
+.byline{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13.5px;color:var(--ink-2);
+  display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px
+}
+.byline span{white-space:nowrap}
+.standfirst{font-size:17.5px;color:var(--ink-2);max-width:62ch;margin:16px 0 0;font-style:italic}
+
+.boundary{
+  margin-top:26px;padding:14px 16px;
+  border-left:3px solid var(--accent);
+  background:var(--accent-soft);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:14px;line-height:1.55;color:var(--ink);
+}
+.boundary p{margin:0;max-width:none}
+
+/* ---------- status spine ---------- */
+.spine{margin:0;border-bottom:1px solid var(--rule)}
+.spine-row{
+  display:grid;
+  grid-template-columns:minmax(96px,124px) 1fr minmax(120px,auto);
+  gap:6px 18px;
+  align-items:baseline;
+  padding:15px 2px;
+  border-bottom:1px solid var(--rule-soft);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+}
+.spine-row:last-child{border-bottom:0}
+.spine-tool{font-size:15px;font-weight:600}
+.spine-what{font-size:14px;color:var(--ink-2);line-height:1.5}
+.spine-what a{font-weight:500}
+
+.chip{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:11.5px;font-weight:600;letter-spacing:.055em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.chip.ran{color:var(--ran)}
+.chip.ran::before{background:var(--ran)}
+.chip.held{color:var(--held)}
+.chip.held::before{background:var(--held)}
+.chip.pending{color:var(--pending)}
+.chip.pending::before{background:none;box-shadow:inset 0 0 0 1.5px var(--pending)}
+
+/* ---------- sections ---------- */
+section.tool{padding-block:44px;border-bottom:1px solid var(--rule)}
+.tool-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;margin-bottom:6px}
+.tool-file{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:13px;color:var(--muted);
+}
+
+/* ---------- console output ---------- */
+.console{
+  background:var(--sunken);
+  border:1px solid var(--rule);
+  border-radius:3px;
+  overflow-x:auto;
+  margin:16px 0;
+  box-shadow:var(--shadow);
+}
+.console-bar{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--muted);
+  padding:8px 14px;border-bottom:1px solid var(--rule);
+  white-space:nowrap;
+}
+.console pre{
+  margin:0;padding:14px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12.5px;line-height:1.66;
+  color:var(--ink-2);
+  white-space:pre;
+}
+.console pre b{color:var(--ink);font-weight:500}
+.console pre i{color:var(--accent);font-style:normal;font-weight:500}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:16px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13.5px}
+caption{
+  text-align:left;padding:12px 14px 0;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:12.5px;color:var(--muted);
+}
+th,td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--rule-soft);white-space:nowrap}
+thead th{
+  font-size:11.5px;font-weight:600;letter-spacing:.055em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--rule);
+}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.mark{color:var(--accent);font-weight:600}
+td.name{white-space:normal;min-width:150px}
+tbody tr.pick td{background:var(--accent-soft)}
+
+/* ---------- eta chart ---------- */
+figure.chart{margin:20px 0;padding:18px 16px 14px;background:var(--surface);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow)}
+figure.chart figcaption{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13px;color:var(--ink-2);margin-bottom:16px;max-width:60ch;line-height:1.5
+}
+.bars{display:grid;gap:9px}
+.bar-row{display:grid;grid-template-columns:minmax(88px,138px) 1fr 46px;gap:12px;align-items:center}
+.bar-label{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--ink-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.bar-track{position:relative;height:16px;background:var(--sunken);border-radius:2px}
+.bar-fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:2px 4px 4px 2px}
+.bar-val{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right
+}
+.scale{
+  display:grid;grid-template-columns:minmax(88px,138px) 1fr 46px;gap:12px;
+  margin-top:10px;padding-top:8px;border-top:1px solid var(--rule-soft)
+}
+.scale-ticks{display:flex;justify-content:space-between;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ---------- notes ---------- */
+.note{
+  border-left:2px solid var(--rule);
+  padding-left:16px;margin:18px 0;
+  font-size:15px;color:var(--ink-2);
+}
+.note p{margin:0 0 10px}
+.note p:last-child{margin:0}
+.note .eyebrow{display:block;margin-bottom:6px}
+.note code,p code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.86em;background:var(--sunken);
+  padding:1px 5px;border-radius:2px;color:var(--ink);
+  overflow-wrap:anywhere;
+}
+
+.pendingbox{
+  border:1px dashed var(--rule);
+  border-radius:3px;padding:18px;background:var(--surface);
+  margin:16px 0;
+}
+.pendingbox ol{margin:10px 0 0;padding-left:20px;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;color:var(--ink-2)}
+.pendingbox li{margin-bottom:6px}
+
+footer{padding-block:40px 0}
+footer h3{margin-top:0}
+.srcs{font-size:14px;color:var(--ink-2)}
+.srcs li{margin-bottom:7px}
+.srcs ul{padding-left:20px;margin:8px 0 0}
+
+@media (max-width:560px){
+  .spine-row{grid-template-columns:1fr auto;gap:4px 12px}
+  .spine-what{grid-column:1 / -1}
+  .bar-row,.scale{grid-template-columns:78px 1fr 42px;gap:8px}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Working record · Auckland · September 2026</p>
+  <h1>Catchment Mission Fit</h1>
+  <p class="standfirst">The output behind the study — what each tool actually produced, what it established, and which parts could not be run.</p>
+  <div class="byline">
+    <span>Pavithra Bamunu</span>
+    <span>Duty Manager, Four Square Eden Terrace</span>
+    <span>MAppBus (Business Analytics), First Class Honours</span>
+  </div>
+  <div class="boundary">
+    <p><strong>Data boundary.</strong> I work in a Foodstuffs banner store. No store data of any kind — sales, SAP extracts, loyalty records, reports — was used, viewed for this purpose or exported, in raw, aggregated or anonymised form. Everything below is built from Stats NZ Census 2023, the Household Economic Survey, OpenStreetMap and Foodstuffs North Island's published accounts. The boundary is why one section on this page has no results in it.</p>
+  </div>
+</header>
+
+<section class="spine" aria-label="Tool status summary">
+  <div class="spine-row">
+    <div class="spine-tool">Python</div>
+    <div class="spine-what">Feature build, K-means segmentation, spatial join across 606 catchments</div>
+    <div><span class="chip ran">Executed</span></div>
+  </div>
+  <div class="spine-row">
+    <div class="spine-tool">R</div>
+    <div class="spine-what">Independent validation — gap statistic, bootstrap stability, MANOVA, Tukey HSD</div>
+    <div><span class="chip ran">Executed</span></div>
+  </div>
+  <div class="spine-row">
+    <div class="spine-tool">SQL</div>
+    <div class="spine-what">Five queries that test the model's central assumption — all five execute, none can return a row</div>
+    <div><span class="chip held">Runs · no data</span></div>
+  </div>
+  <div class="spine-row">
+    <div class="spine-tool">Excel</div>
+    <div class="spine-what">Commercial model — 64 live formulas, scenario and sensitivity sheets</div>
+    <div><span class="chip ran">Executed</span></div>
+  </div>
+  <div class="spine-row">
+    <div class="spine-tool">Tableau</div>
+    <div class="spine-what">Five-sheet dashboard, specified in full against a published extract</div>
+    <div><span class="chip pending">Not yet built</span></div>
+  </div>
+</section>
+
+<!-- ============ PYTHON ============ -->
+<section class="tool" id="python">
+  <p class="eyebrow">01 · Segmentation</p>
+  <div class="tool-head">
+    <h2>Python</h2>
+    <span class="tool-file">build_features.py · cluster.py · format_fit.py</span>
+  </div>
+  <p>Three scripts take the raw census export to a named shortlist: build the feature table, cluster it, then overlay the store network. <strong>606 catchments, 516,585 households, seven features, no missing values.</strong></p>
+
+  <h3>Choosing k — and going against the metric</h3>
+  <p>Silhouette favours three clusters. I chose five.</p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Silhouette score by cluster count, 25 random initialisations at each k, fixed seed</caption>
+      <thead><tr><th>k</th><th class="num">Silhouette</th><th>Outcome</th></tr></thead>
+      <tbody>
+        <tr><td>3</td><td class="num">0.353</td><td>Metric optimum — inner-city absorbed into a broader urban group</td></tr>
+        <tr><td>4</td><td class="num">0.351</td><td>Marginally lower, same absorption</td></tr>
+        <tr class="pick"><td>5</td><td class="num">0.326</td><td>Chosen — inner-city apartments separate</td></tr>
+        <tr><td>6</td><td class="num">0.318</td><td>Splits suburban without adding interpretation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">The judgment</span>
+    <p>At k = 3 the inner-city apartment catchments vanish into a broader urban group. That group is only 15 areas and 15,156 households, but it is the most behaviourally distinct segment in Auckland — 45% living alone, 52% without a car, five times the household density of anywhere else. Collapsing it produces a tidier model that cannot see the finding.</p>
+    <p>An analyst who reports only the silhouette-optimal k has let the metric make a business decision.</p>
+  </div>
+
+  <h3>The five archetypes</h3>
+  <div class="tablewrap">
+    <table>
+      <caption>Segment profiles — Census 2023, household level</caption>
+      <thead>
+        <tr>
+          <th>Archetype</th>
+          <th class="num">Areas</th>
+          <th class="num">Households</th>
+          <th class="num">One-person</th>
+          <th class="num">No vehicle</th>
+          <th class="num">Median income</th>
+          <th class="num">Crowded</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">Inner-city apartments</td><td class="num">15</td><td class="num">15,156</td><td class="num">44.9%</td><td class="num mark">51.9%</td><td class="num">$67,900</td><td class="num">8.8%</td></tr>
+        <tr><td class="name">Town-centre mixed</td><td class="num">114</td><td class="num">104,505</td><td class="num">28.5%</td><td class="num">9.5%</td><td class="num">$97,400</td><td class="num">7.4%</td></tr>
+        <tr><td class="name">South Auckland multi-family</td><td class="num">129</td><td class="num">95,169</td><td class="num">11.8%</td><td class="num">7.3%</td><td class="num">$107,700</td><td class="num">21.2%</td></tr>
+        <tr><td class="name">Suburban mainstream</td><td class="num">282</td><td class="num">267,453</td><td class="num">15.6%</td><td class="num">3.7%</td><td class="num">$132,600</td><td class="num">5.9%</td></tr>
+        <tr><td class="name">Rural fringe</td><td class="num">66</td><td class="num">34,302</td><td class="num">15.5%</td><td class="num">1.6%</td><td class="num">$127,700</td><td class="num">5.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Is this just income and density renamed?</h3>
+  <p>The most likely criticism, so it was tested. Principal component analysis says no: household <em>structure</em> is the dominant axis, and density — the obvious confound — does not appear until the third component.</p>
+
+  <div class="console">
+    <div class="console-bar">$ python3 cluster.py — PCA check</div>
+<pre>  PC1   45.5%   avg_residents, pct_one_person, pct_multi_family
+  PC2   29.5%   pct_crowded, pct_no_vehicle, median_income (inverse)
+  PC3   14.1%   log_density, median_income</pre>
+  </div>
+
+  <h3>Network overlay</h3>
+  <p>Store locations reprojected to NZTM2000, nearest-store distance computed per banner per catchment.</p>
+  <div class="tablewrap">
+    <table>
+      <caption>Median straight-line distance to nearest store, km</caption>
+      <thead><tr><th>Archetype</th><th class="num">Four Square</th><th class="num">New World</th><th class="num">Pak'nSave</th><th class="num">Woolworths</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Inner-city apartments</td><td class="num">1.05</td><td class="num">0.90</td><td class="num">6.33</td><td class="num mark">0.57</td></tr>
+        <tr><td class="name">Town-centre mixed</td><td class="num">2.75</td><td class="num">1.76</td><td class="num">2.83</td><td class="num">1.04</td></tr>
+        <tr><td class="name">South Auckland multi-family</td><td class="num">3.24</td><td class="num">2.43</td><td class="num mark">2.22</td><td class="num">1.63</td></tr>
+        <tr><td class="name">Suburban mainstream</td><td class="num">2.99</td><td class="num">2.10</td><td class="num">2.91</td><td class="num">1.49</td></tr>
+        <tr><td class="name">Rural fringe</td><td class="num">7.18</td><td class="num">7.36</td><td class="num">7.27</td><td class="num">6.47</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">Four defects found, four disclosed</span>
+    <p><strong>Suppression coded as −999.</strong> Caught because the household total <em>increased</em> after dropping small areas, which is arithmetically impossible. The ≥100-household filter happened to remove every suppressed row. The analysis was never contaminated — but that was luck, not design, and a filter on any other column would have corrupted every derived percentage.</p>
+    <p><strong>Projected, not geographic, coordinates.</strong> The export ships NZTM2000 eastings and northings in metres. An initial pass assuming degrees returned zero rows.</p>
+    <p><strong>Unstable cluster labels.</strong> K-means label numbers are arbitrary and move when the input changes. Names hardcoded to label numbers silently attached to the wrong clusters — Eden Terrace came out as "South Auckland multi-family". Names are now derived from each cluster's own profile and verified against four known areas.</p>
+    <p><strong>Bounding-box region filter.</strong> An initial coordinate box leaked into Waikato, putting Thames and Coromandel in the results at 56 km from a store. Recalibrated against known centroids: Waiheke East marks the eastern edge at x = 1,791,870.</p>
+  </div>
+</section>
+
+<!-- ============ R ============ -->
+<section class="tool" id="r">
+  <p class="eyebrow">02 · Validation</p>
+  <div class="tool-head">
+    <h2>R</h2>
+    <span class="tool-file">validate.R · base R, no packages</span>
+  </div>
+  <p>The segmentation was built in Python, so it was validated in something else. Four tests, the console output as it ran.</p>
+
+  <div class="console">
+    <div class="console-bar">$ Rscript validate.R</div>
+<pre>=====================================================================
+STATISTICAL VALIDATION - Auckland catchment segmentation
+=====================================================================
+Catchments: 606   Features: 7
+
+<b>1. GAP STATISTIC</b>
+   k    log(Wk)   E[log(Wk)]      Gap      s(k)
+   3      7.744        9.366    1.623     0.013
+   4      7.544        9.282    1.738     0.013
+   5      7.333        9.227    1.893     0.015
+  10      6.745        9.009    2.264     0.013
+
+   Gap statistic (1-SE rule) selects k = <i>NA</i>
+   Gap continues rising to k = 10 (max gap)
+
+<b>2. BOOTSTRAP CLUSTER STABILITY (100 resamples, Jaccard)</b>
+   cluster    n    mean Jaccard    verdict
+       1    128       0.850       <i>stable</i>
+       2     66       0.936       <i>stable</i>
+       3    113       0.784       <i>stable</i>
+       4    284       0.870       <i>stable</i>
+       5     15       0.872       <i>stable</i>
+   overall mean Jaccard: <b>0.862</b>
+
+<b>3. MANOVA (Pillai's trace)</b>
+           Df Pillai approx F num Df den Df    Pr(&gt;F)
+df$seg      4 2.7116    179.8     28   2392 &lt; 2.2e-16 ***
+
+<b>4. TUKEY HSD - no-vehicle share, pairwise</b>
+   All 10 pairwise comparisons significant at p &lt; 0.001
+
+   Highest no-vehicle segment: cluster 5 at <b>51.9%</b>
+   Next highest: 9.5%  -  a gap of <i>42.4 percentage points</i></pre>
+  </div>
+
+  <figure class="chart">
+    <figcaption>Variance in each feature explained by segment membership (η²). No-vehicle share and density separate the segments most sharply; income least — which is the point the PCA also made.</figcaption>
+    <div class="bars" role="img" aria-label="Eta squared by feature: no vehicle 0.808, density 0.760, average residents 0.683, one-person 0.663, crowded 0.604, multi-family 0.566, median income 0.387">
+      <div class="bar-row"><div class="bar-label" title="pct_no_vehicle">pct_no_vehicle</div><div class="bar-track"><div class="bar-fill" style="width:80.8%"></div></div><div class="bar-val">.808</div></div>
+      <div class="bar-row"><div class="bar-label" title="log_density">log_density</div><div class="bar-track"><div class="bar-fill" style="width:76.0%"></div></div><div class="bar-val">.760</div></div>
+      <div class="bar-row"><div class="bar-label" title="avg_residents">avg_residents</div><div class="bar-track"><div class="bar-fill" style="width:68.3%"></div></div><div class="bar-val">.683</div></div>
+      <div class="bar-row"><div class="bar-label" title="pct_one_person">pct_one_person</div><div class="bar-track"><div class="bar-fill" style="width:66.3%"></div></div><div class="bar-val">.663</div></div>
+      <div class="bar-row"><div class="bar-label" title="pct_crowded">pct_crowded</div><div class="bar-track"><div class="bar-fill" style="width:60.4%"></div></div><div class="bar-val">.604</div></div>
+      <div class="bar-row"><div class="bar-label" title="pct_multi_family">pct_multi_family</div><div class="bar-track"><div class="bar-fill" style="width:56.6%"></div></div><div class="bar-val">.566</div></div>
+      <div class="bar-row"><div class="bar-label" title="median_income">median_income</div><div class="bar-track"><div class="bar-fill" style="width:38.7%"></div></div><div class="bar-val">.387</div></div>
+    </div>
+    <div class="scale">
+      <div></div>
+      <div class="scale-ticks"><span>0</span><span>0.25</span><span>0.50</span><span>0.75</span><span>1.0</span></div>
+      <div></div>
+    </div>
+  </figure>
+
+  <div class="note">
+    <span class="eyebrow">What these results actually prove — and what they don't</span>
+    <p>The clusters are <em>defined by</em> these features, so the significance tests are close to tautological. They are reported for effect size, not for the p-values, and anyone reading them as vindication has misread them.</p>
+    <p>The two informative results are the ones not guaranteed by construction: the <strong>gap statistic</strong>, which is an independent criterion for k — and which never satisfies the 1-SE rule, rising all the way to k = 10, so it does not support my choice of five — and the <strong>bootstrap Jaccard scores</strong>, which test whether the segments survive resampling. At a mean of 0.862, with every segment above Hennig's 0.75 threshold, they do.</p>
+    <p>Reporting the gap statistic result is the honest half of this section. It disagrees with me.</p>
+  </div>
+</section>
+
+<!-- ============ SQL ============ -->
+<section class="tool" id="sql">
+  <p class="eyebrow">03 · The test that has no data</p>
+  <div class="tool-head">
+    <h2>SQL</h2>
+    <span class="tool-file">validation_queries.sql · run_sql.py · DuckDB 1.5.5</span>
+  </div>
+  <p>Everything above rests on one assumption: that household composition predicts shopper mission. It is grounded in retail logic, not in observed behaviour — because observing behaviour requires transaction data, and this analysis has none.</p>
+  <p>So the queries exist and the findings do not. <strong>These are the five I would run in week one with access to FSNI data.</strong> The first is the one that decides whether the project continues.</p>
+  <p>What could be done from outside is prove the SQL is real. The documented schema was built as empty tables in DuckDB and the file executed against it. Every query parses, every join resolves, every window function is legal, and each returns a result set of the right shape with zero rows in it.</p>
+
+  <div class="console">
+    <div class="console-bar">validation_queries.sql — Query 1, the central test</div>
+<pre><i>/* If household composition predicts mission, inner-city apartment
+   catchments should show HIGHER trip frequency and LOWER basket
+   value than suburban mainstream. If they do not, the model's core
+   assumption is wrong and the project should stop. */</i>
+
+WITH customer_activity AS (
+    SELECT
+        c.customer_sk,
+        c.home_sa2_code,
+        COUNT(DISTINCT t.basket_id)         AS trips,
+        COUNT(DISTINCT d.iso_week)          AS active_weeks,
+        SUM(t.txn_value_incl_gst)           AS total_spend,
+        AVG(t.txn_value_incl_gst)           AS avg_basket,
+        AVG(t.item_count)                   AS avg_items
+    FROM fact_transaction t
+    ...</pre>
+  </div>
+
+  <div class="console">
+    <div class="console-bar">$ python3 run_sql.py</div>
+<pre>=====================================================================
+SQL EXECUTION AGAINST THE ASSUMED SCHEMA
+=====================================================================
+Engine   : DuckDB 1.5.5
+Tables   : 7 created, <b>ALL EMPTY</b> — by design
+
+<b>DIALECT SHIM APPLIED</b>
+   DATEADD(year, -n, CURRENT_DATE) -&gt; (CURRENT_DATE - INTERVAL n YEAR)   (5)
+   DATEPART(quarter, col)          -&gt; EXTRACT(quarter FROM col)          (2)
+   STDDEV()                        -&gt; stddev_samp()                      (1)
+
+QUERY 1 — THE CENTRAL TEST
+   status  : <i>OK — parsed, planned, executed</i>
+   returns : 9 columns, 0 rows
+   columns : segment, customers, trips_per_week, avg_basket, avg_items,
+             annual_spend, basket_stddev, trips_index, basket_index
+
+QUERY 2 — WHERE DO THE EIGHT CATCHMENTS ACTUALLY SHOP?
+   status  : <i>OK</i>   returns : 8 columns, 0 rows
+
+QUERY 3 — SIZE THE LEAK
+   status  : <i>OK</i>   returns : 8 columns, 0 rows
+
+QUERY 4 — RANGE FIT IN EXISTING STORES
+   status  : <i>OK</i>   returns : 8 columns, 0 rows
+
+QUERY 5 — MONITORING
+   status  : <i>OK</i>   returns : 7 columns, 0 rows
+
+=====================================================================
+RESULT: <b>5 of 5 queries executed, 0 failed</b>
+=====================================================================</pre>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">Running it found two defects — which is the reason to run it</span>
+    <p><strong>Query 4 did not bind.</strong> It computed a banner benchmark as <code>AVG(SUM(band_sales)) OVER (PARTITION BY banner)</code> — an aggregate nested inside a window function, in a query with no <code>GROUP BY</code> to support it. Invalid SQL that reads perfectly well on the page. Rewritten to take the average of per-store shares, which also fixes the statistic: the original was a ratio of averages, so a single high-turnover store could set the benchmark for its whole banner. Now every store counts once.</p>
+    <p><strong>Query 4 referenced a column the schema block did not declare.</strong> <code>ref_catchment.avg_residents_proxy</code> was used but never documented. Building the tables straight from the documented block is what surfaced it. The block now declares it, and the correction is dated in the file rather than quietly patched.</p>
+    <p>Both were found the first time the file was executed, and neither would have been found by reading it.</p>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">On the schema and the dialect</span>
+    <p>I do not know FSNI's warehouse schema. The table and column names are a documented assumption, defined in a block at the top of the file so the <em>logic</em> can be reviewed independently of the naming. Adapting these to the real schema is a rename, not a rewrite.</p>
+    <p>The file is written for Snowflake, BigQuery or SQL Server. Running it on DuckDB needed three scalar-function substitutions, listed in the log above — which is what "minimal change between dialects" should mean in practice, stated as a count rather than as a claim.</p>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">What this does not show</span>
+    <p>Zero rows is the correct result, not a disappointing one. <strong>No synthetic transactions were generated.</strong> Filling these tables with invented baskets would produce output that looks like a finding, proves nothing, and to a reader skimming quickly would imply access I do not have.</p>
+  </div>
+
+  <div class="pendingbox">
+    <p class="eyebrow">What the five queries establish</p>
+    <ol>
+      <li>Does trip frequency and basket size differ by archetype, as the model predicts?</li>
+      <li>Where do the households in the eight flagged catchments currently shop?</li>
+      <li>What share of each catchment's grocery spend already reaches a Foodstuffs banner?</li>
+      <li>Does range mix differ by archetype in stores that serve more than one?</li>
+      <li>Has mission mix moved since the last census — the cost-of-living drift test.</li>
+    </ol>
+  </div>
+  <p>Query 2 alone would convert every illustrative figure in the commercial model into an actual one. That is roughly a week of work for someone inside the business, and it is the reason this study stops where it does. The queries are ready; only the data is missing.</p>
+</section>
+
+<!-- ============ EXCEL ============ -->
+<section class="tool" id="excel">
+  <p class="eyebrow">04 · Commercial model</p>
+  <div class="tool-head">
+    <h2>Excel</h2>
+    <span class="tool-file">catchment_commercial_model.xlsx · 7 sheets, 64 live formulas</span>
+  </div>
+  <p>Built so that a commercial reader can change an assumption and watch every downstream figure move — not a static table of numbers I calculated elsewhere and typed in.</p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Workbook structure</caption>
+      <thead><tr><th>Sheet</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td>README</td><td class="name">Colour convention, sources, what the model does and does not claim</td></tr>
+        <tr><td>Assumptions</td><td class="name">Every input in one place, each tagged with its source or marked unsupported</td></tr>
+        <tr><td>Scenario Model</td><td class="name">Addressable spend by catchment group at 5% / 10% / 20% recapture</td></tr>
+        <tr><td>Sensitivity</td><td class="name">Recapture rate against FSNI EBIT, wholesale ratio applied</td></tr>
+        <tr><td>Segments</td><td class="name">The five archetype profiles, linked through to the scenarios</td></tr>
+        <tr><td>Gap Shortlist</td><td class="name">The 22 flagged catchments with households and distances</td></tr>
+        <tr><td>Data Dictionary</td><td class="name">Every field, its definition, its source file and its units</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The colour convention is the argument</h3>
+  <p>Three cell colours, stated on the README sheet and used consistently:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Colour</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Blue</td><td class="name">Input — change this</td></tr>
+        <tr><td>Black</td><td class="name">Formula — do not type over it</td></tr>
+        <tr><td>Yellow</td><td class="name">Assumption with <em>no evidential basis</em> — the recapture rate is the main one</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The yellow cells matter more than the blue ones. A commercial reader will test any figure within a minute, and marking the ones I could not support is faster and more credible than waiting to be asked.</p>
+
+  <div class="note">
+    <span class="eyebrow">Where the model ends up</span>
+    <p>$171.6m of annual grocery spend sits in the 22 flagged catchments. Against FSNI's published FY24 accounts — $9.2bn revenue, $292m EBIT, a 3.17% margin and a $3.2m statutory loss — recapturing 10% of it is worth roughly <strong>$0.46m of EBIT</strong>. About 0.16%.</p>
+    <p>That is modest, and the model says so rather than hiding it. The same workbook shows a 5% improvement in the allocation of FSNI's $254m annual capex is worth around <strong>$12.7m</strong> — twenty-seven times the leverage. The catchment gaps are not the prize. They are the evidence the method works.</p>
+  </div>
+</section>
+
+<!-- ============ TABLEAU ============ -->
+<section class="tool" id="tableau">
+  <p class="eyebrow">05 · Dashboard</p>
+  <div class="tool-head">
+    <h2>Tableau</h2>
+    <span class="tool-file">tableau_spec.md · extract published, build outstanding</span>
+  </div>
+  <p><span class="chip pending">Not yet built</span></p>
+  <p>The extract is published and the build is specified sheet by sheet, including calculated fields, the map projection and the colour rules. The workbook itself is not finished, and this page says so rather than showing the specification as though it were a result.</p>
+
+  <div class="pendingbox">
+    <p class="eyebrow">Specified — five sheets into one dashboard</p>
+    <ol>
+      <li><strong>Catchment map</strong> — 606 SA2 areas coloured by archetype, store network overlaid by banner</li>
+      <li><strong>Segment profile</strong> — the seven features per archetype, as a small-multiple comparison</li>
+      <li><strong>Distance by banner</strong> — median distance matrix, archetype against banner</li>
+      <li><strong>Gap shortlist</strong> — the 22 flagged catchments, sortable by households and by distance</li>
+      <li><strong>Commercial sensitivity</strong> — recapture rate against EBIT, driven by a parameter control</li>
+    </ol>
+  </div>
+  <p>This section gets filled in when the workbook is built.</p>
+</section>
+
+<!-- ============ RESULT ============ -->
+<section class="tool" id="result">
+  <p class="eyebrow">The output</p>
+  <h2>22 catchments, 18,771 households</h2>
+  <p>Each archetype has a mission the network should serve and a distance beyond which it does not. The thresholds are judgment, informed by each segment's mobility profile, and they are stated explicitly so they can be challenged and re-run.</p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Flagged catchments, ranked by households. "Nearest Woolworths" is shown because in every inner-city case a competitor sits between the household and the nearest Foodstuffs banner.</caption>
+      <thead>
+        <tr><th>Catchment</th><th>Archetype</th><th class="num">Households</th><th class="num">Nearest FS banner</th><th class="num">Nearest Woolworths</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">Victoria Park</td><td class="name">Inner-city</td><td class="num">1,566</td><td class="num">1.08</td><td class="num mark">0.57</td></tr>
+        <tr><td class="name">Symonds Street West</td><td class="name">Inner-city</td><td class="num">1,482</td><td class="num">1.05</td><td class="num mark">0.92</td></tr>
+        <tr><td class="name">Manly East</td><td class="name">Town-centre</td><td class="num">1,359</td><td class="num">2.81</td><td class="num">1.51</td></tr>
+        <tr><td class="name">Symonds Street North West</td><td class="name">Inner-city</td><td class="num">1,308</td><td class="num">1.05</td><td class="num mark">0.60</td></tr>
+        <tr><td class="name">Unsworth Heights East</td><td class="name">Town-centre</td><td class="num">1,296</td><td class="num">3.22</td><td class="num">1.95</td></tr>
+        <tr><td class="name">Helensville</td><td class="name">Town-centre</td><td class="num">1,137</td><td class="num">2.27</td><td class="num">0.27</td></tr>
+        <tr><td class="name">Queen Street South West</td><td class="name">Inner-city</td><td class="num">1,065</td><td class="num">1.18</td><td class="num mark">0.67</td></tr>
+        <tr><td class="name">Ōtāhuhu South</td><td class="name">Town-centre</td><td class="num">1,035</td><td class="num">3.47</td><td class="num">0.91</td></tr>
+        <tr><td class="name">Māngere Bridge</td><td class="name">Town-centre</td><td class="num">972</td><td class="num">2.65</td><td class="num">2.28</td></tr>
+        <tr><td class="name">Albany West</td><td class="name">Town-centre</td><td class="num">915</td><td class="num">2.07</td><td class="num">3.17</td></tr>
+        <tr><td class="name">Surfdale</td><td class="name">Town-centre</td><td class="num">756</td><td class="num">2.75</td><td class="num">1.61</td></tr>
+        <tr><td class="name">Ostend</td><td class="name">Town-centre</td><td class="num">729</td><td class="num">2.75</td><td class="num">0.30</td></tr>
+        <tr><td class="name">Henderson Central</td><td class="name">Inner-city</td><td class="num">729</td><td class="num">2.68</td><td class="num mark">0.54</td></tr>
+        <tr><td class="name">Glendowie South East</td><td class="name">Town-centre</td><td class="num">726</td><td class="num">2.49</td><td class="num">2.89</td></tr>
+        <tr><td class="name">Hobson Ridge South</td><td class="name">Inner-city</td><td class="num">705</td><td class="num">1.28</td><td class="num mark">0.88</td></tr>
+        <tr><td class="name">Windsor Park</td><td class="name">Town-centre</td><td class="num">651</td><td class="num">2.55</td><td class="num">1.57</td></tr>
+        <tr><td class="name">Symonds Street East</td><td class="name">Inner-city</td><td class="num">600</td><td class="num">1.26</td><td class="num mark">0.85</td></tr>
+        <tr><td class="name">Oneroa East–Palm Beach</td><td class="name">Town-centre</td><td class="num">480</td><td class="num">3.00</td><td class="num">2.15</td></tr>
+        <tr><td class="name">Manukau Central</td><td class="name">Town-centre</td><td class="num">411</td><td class="num">3.14</td><td class="num">2.91</td></tr>
+        <tr><td class="name">Piha</td><td class="name">Town-centre</td><td class="num">381</td><td class="num">16.54</td><td class="num">16.84</td></tr>
+        <tr><td class="name">Ōtāhuhu Central</td><td class="name">Town-centre</td><td class="num">342</td><td class="num">3.37</td><td class="num">0.26</td></tr>
+        <tr><td class="name">Panmure West</td><td class="name">Inner-city</td><td class="num">126</td><td class="num">3.49</td><td class="num mark">1.62</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">The result that contradicts me</span>
+    <p>South Auckland's 129 multi-family catchments — the segment with the largest baskets and the tightest budgets — are <strong>well served</strong>, at a median 2.22 km to a Pak'nSave. That is closer than any other segment sits to its matching value format.</p>
+    <p>I expected to find a gap there. There isn't one, and it appears on this page at the same size as the findings that support the argument. A model that only ever confirms expectations is not being read honestly.</p>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">Before anyone acts on this table</span>
+    <p>Distances are straight-line, not walking or driving. In the CBD, with motorways and a harbour edge, real walking distance is longer — which widens these gaps rather than narrowing them.</p>
+    <p>Store positions come from OpenStreetMap. Querying supermarkets alone returned 7 Four Squares for the whole region, an obvious undercount; including convenience-tagged stores gives 24, against 25 reported for the Auckland region as at April 2025. Coverage is effectively complete — but the eight inner-city flags should still be confirmed against the official store finder before any decision rests on them.</p>
+  </div>
+</section>
+
+<footer>
+  <h3>References</h3>
+  <p class="srcs" style="margin-bottom:14px">APA 7th edition. In-text citations appear in the full study; this is the consolidated list.</p>
+  <div class="srcs">
+    <ul>
+      <li>Commerce Commission New Zealand. (2025, August 6). <em>Annual grocery report 2024</em>.</li>
+      <li>Foodstuffs North Island Limited. (2024). <em>Concise annual report FY24</em>.</li>
+      <li>Hennig, C. (2007). Cluster-wise assessment of cluster stability. <em>Computational Statistics &amp; Data Analysis, 52</em>(1), 258–271.</li>
+      <li>OpenStreetMap contributors. (2026). <em>Supermarket and convenience store locations, Auckland region</em> [Data set]. OpenStreetMap Foundation.</li>
+      <li>Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., &amp; Duchesnay, É. (2011). Scikit-learn: Machine learning in Python. <em>Journal of Machine Learning Research, 12</em>, 2825–2830.</li>
+      <li>Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. <em>Journal of Computational and Applied Mathematics, 20</em>, 53–65.</li>
+      <li>Stats NZ. (2023a). <em>2023 Census totals by topic for households by statistical area 2</em> [Data set]. Stats NZ Geographic Data Service.</li>
+      <li>Stats NZ. (2023b). <em>Household expenditure statistics: Year ended June 2023</em>.</li>
+      <li>Stats NZ. (2023c). <em>Statistical area 2 2023 (generalised)</em> [Data set]. Stats NZ Geographic Data Service.</li>
+      <li>Tibshirani, R., Walther, G., &amp; Hastie, T. (2001). Estimating the number of clusters in a data set via the gap statistic. <em>Journal of the Royal Statistical Society: Series B, 63</em>(2), 411–423.</li>
+      <li>Wirth, R., &amp; Hipp, J. (2000). CRISP-DM: Towards a standard process model for data mining. <em>Proceedings of the 4th International Conference on the Practical Applications of Knowledge Discovery and Data Mining</em>, 29–39.</li>
+    </ul>
+    <p style="margin-top:18px">Tools: Python 3 (pandas, scikit-learn, pyproj), R (base), ANSI SQL executed on DuckDB 1.5.5, Excel, Tableau. The full pipeline — raw downloads, scripts, intermediate datasets, outputs and logs — is packaged and re-runnable end to end. Every figure on this page traces to a named script and a named source file.</p>
+  </div>
+</footer>
+
+</div>
+
+</body>
+</html>
