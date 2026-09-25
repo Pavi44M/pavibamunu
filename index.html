@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pavithra Bamunu — Analytics</title>
+<meta name="author" content="Pavithra Bamunu">
+<meta name="description" content="Retail analytics from Auckland — catchment segmentation, store network fit, and the operator's view behind the data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --void:#070b12; --panel:#0f1622; --panel-2:#141e2c;
+  --etch:#1f2a38; --etch-2:#172230;
+  --ink:#eaf0f6; --ink-2:#b0bac8; --ink-3:#7d8a9c;
+  --accent:#63b6d8;
+}
+*{box-sizing:border-box}
+html,body{background:var(--void)}
+body{
+  margin:0;padding-block:0 70px;padding-inline:20px;
+  color:var(--ink-2);
+  font-family:"Samsung Sans","SamsungOne","One UI Sans","Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+[hidden]{display:none!important}
+.wrap{max-width:900px;margin:0 auto}
+
+.tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--ink-3);display:block}
+
+header{padding-block:78px 18px}
+h1{font-size:clamp(34px,7vw,62px);font-weight:300;letter-spacing:-.03em;line-height:1.02;
+  margin:16px 0 0;color:var(--ink);text-wrap:balance}
+h1 b{font-weight:600}
+.sub{font-size:clamp(16px,2.4vw,19px);color:var(--ink-2);max-width:56ch;margin:22px 0 0;line-height:1.55}
+.who{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:26px;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-3);letter-spacing:.05em}
+
+h2{font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 18px;font-family:"JetBrains Mono",monospace}
+section{padding-block:44px 0;border-top:1px solid var(--etch-2);margin-top:44px}
+
+.work{display:grid;gap:12px}
+.item{
+  display:block;text-decoration:none;padding:22px 20px;border-radius:3px;
+  background:linear-gradient(165deg,var(--panel-2),var(--panel) 62%);
+  border:1px solid var(--etch);transition:border-color .25s,transform .25s;
+}
+.item:hover,.item:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+.item .k{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--accent)}
+.item .t{display:block;font-size:22px;font-weight:500;color:var(--ink);margin:9px 0 7px;letter-spacing:-.01em}
+.item .d{display:block;font-size:15px;color:var(--ink-2);line-height:1.5;max-width:64ch}
+.item .m{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:13px;
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3);letter-spacing:.08em}
+
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--etch-2);
+  border:1px solid var(--etch-2);border-radius:3px;overflow:hidden;margin-top:4px}
+.fact{background:var(--panel);padding:16px 14px}
+.fact .n{font-family:"JetBrains Mono",monospace;font-size:clamp(19px,3.4vw,25px);
+  color:var(--ink);font-weight:500;letter-spacing:-.02em;line-height:1.1}
+.fact .l{font-size:12.5px;color:var(--ink-3);margin-top:6px;line-height:1.35}
+
+.note{font-size:15px;color:var(--ink-2);max-width:62ch;line-height:1.6}
+.note b{color:var(--ink);font-weight:600}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--etch-2);
+  display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between;
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-3)}
+footer a{color:var(--ink-3)}
+footer a:hover{color:var(--accent)}
+
+@media (max-width:700px){ .facts{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="tag">Auckland, New Zealand</span>
+    <h1>Pavithra <b>Bamunu</b></h1>
+    <p class="sub">Fourteen years across multi-site retail in New Zealand and Asia — category P&amp;L, demand forecasting, and the direct leadership of teams up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a contracting core segment. Then I rebuilt here: a First Class Honours Master's in Business Analytics, and a Duty Manager's view of a supermarket floor. That last part is why this work reads the shop as well as the data.</p>
+    <div class="who">
+      <span>Customer &amp; business data analytics</span>
+      <span>Category P&amp;L · Demand forecasting · Product management</span>
+      <span>Python · R · SQL · Tableau · Power BI</span>
+      <span>MAppBus (Business Analytics), First Class Honours · MBA · EMPM</span>
+      <span>Duty Manager, Four Square Eden Terrace</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Selected work</h2>
+    <div class="work">
+
+      <a class="item" href="catchment-slab.html">
+        <span class="k">interactive study · 2026</span>
+        <span class="t">Catchment Mission Fit</span>
+        <span class="d">Do store formats match the shoppers who actually live around them? 606 Auckland catchments segmented by the shopper mission their household composition implies, overlaid on the public store network. Twenty-two catchments come back mismatched — and one expected finding turns out to be wrong.</span>
+        <span class="m"><span>K-means · PCA · bootstrap validation</span><span>Census 2023 · HES · OpenStreetMap</span><span>public data only</span></span>
+      </a>
+
+      <a class="item" href="method.html">
+        <span class="k">the working</span>
+        <span class="t">Tool output, end to end</span>
+        <span class="d">The Python, R, SQL and Excel results behind that study — including the query set that has no data to run against, executed against a documented schema to prove it is valid rather than pretending otherwise.</span>
+        <span class="m"><span>scripts and console output</span><span>four data defects, all disclosed</span></span>
+      </a>
+
+      <a class="item" href="catchment-command.html">
+        <span class="k">dashboard</span>
+        <span class="t">Catchment Command</span>
+        <span class="d">The same model laid out conventionally — map, segment profiles, distance matrix, flagged shortlist and a live sensitivity model, all visible at once for a reader with four minutes.</span>
+        <span class="m"><span>606 catchments · 146 stores</span><span>colour-vision validated</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What that study found</h2>
+    <div class="facts">
+      <div class="fact"><div class="n">606</div><div class="l">catchments analysed</div></div>
+      <div class="fact"><div class="n">516,585</div><div class="l">households covered</div></div>
+      <div class="fact"><div class="n">22</div><div class="l">format-to-mission mismatches</div></div>
+      <div class="fact"><div class="n">27×</div><div class="l">bigger lever than the one it set out to find</div></div>
+    </div>
+    <p class="note" style="margin-top:20px">The headline is that fifteen inner-city catchments have <b>51.9% of households without a motor vehicle</b>, and eight of those have no convenience-format store within a walkable kilometre while a competitor sits closer. The more useful finding came from reading the co-operative's published accounts: at a 3.17% margin the recapture opportunity is worth about $0.46m, while allocating $254m of annual capital 5% better is worth around $12.7m. The catchment gaps are not the prize — they are the evidence the method finds things.</p>
+  </section>
+
+  <section>
+    <h2>Background</h2>
+    <div class="work">
+      <a class="item" href="cv.html">
+        <span class="k">curriculum vitae</span>
+        <span class="t">Fourteen years, filtered by what you need</span>
+        <span class="d">Pick a capability — forecasting, category P&amp;L, analytics, leadership — and only the roles that demonstrate it stay lit, with the evidence inside them marked. Downloadable as PDF or Word.</span>
+        <span class="m"><span>Samsung · Orel · Ceylon Business Appliances</span><span>NZ and Asia</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Files and method</h2>
+    <p class="note">Every figure traces to a named script and a named source file. The full pipeline — scripts, intermediate data, outputs, logs and the written study — is re-runnable end to end and available on request.</p>
+    <p class="note" style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No Foodstuffs or member-store data of any kind was used in this work, in raw, aggregated or anonymised form. It is built entirely on public sources.</p>
+  </section>
+
+  <footer>
+    <span>Pavithra Bamunu · Auckland</span>
+    <span><a href="mailto:pavithrasam.s6@gmail.com">pavithrasam.s6@gmail.com</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
