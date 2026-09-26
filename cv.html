@@ -124,6 +124,22 @@ p.lede:last-child{margin-bottom:0}
   color:var(--ink-3);border:1px solid var(--etch-2);border-radius:2px;padding:4px 8px}
 .rtag.hit{color:var(--accent);border-color:rgba(99,182,216,.4)}
 
+/* built work — responds to the same filter as the roles above */
+.built{display:grid;gap:10px}
+.bx{display:block;text-decoration:none;padding:18px 16px;border-radius:3px;
+  background:var(--panel);border:1px solid var(--etch-2);
+  transition:border-color .25s,opacity .25s,transform .25s}
+a.bx:hover,a.bx:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+.bx.on{border-color:rgba(99,182,216,.45)}
+.bx.dim{opacity:.3}
+.bx .bh{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;justify-content:space-between}
+.bx .bt{font-size:17px;font-weight:600;color:var(--ink);line-height:1.3}
+.bx .by{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+.bx .bw{display:block;font-size:13px;color:var(--accent);margin-top:3px;opacity:.85}
+.bx .bd{display:block;font-size:14.5px;line-height:1.55;color:var(--ink-2);margin-top:10px;max-width:70ch}
+.bx .bm{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:11px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);letter-spacing:.07em}
+
 /* two-column blocks */
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--etch-2);
   border:1px solid var(--etch-2);border-radius:2px;overflow:hidden}
@@ -205,6 +221,12 @@ footer a:hover{color:var(--accent)}
   </section>
 
   <section>
+    <h2>And things I have built</h2>
+    <p class="lede" style="margin-bottom:20px">These carry the same capability tags, so the filter above covers them too — what I have been paid to do and what I have built on my own sit under one lens.</p>
+    <div class="built" id="built"></div>
+  </section>
+
+  <section>
     <h2>Education</h2>
     <div class="cols">
       <div class="cell">
@@ -226,10 +248,10 @@ footer a:hover{color:var(--accent)}
         <span class="yr">2017 – Oct 2018</span>
       </div>
       <div class="cell">
-        <h3>Selected project work</h3>
-        <div class="sub">Machine learning, forecasting and segmentation</div>
-        <p>SARIMA-X, XGBoost and K-means on Statistics NZ data, visualised in Tableau — full pipeline from acquisition through validation to stakeholder-facing delivery. Graded A–.</p>
-        <span class="yr">2025</span>
+        <h3>Coursework, business analytics core</h3>
+        <div class="sub">What the 180 credits actually covered</div>
+        <p>Statistical methods, data warehousing and SQL, machine learning, and visual analytics — including a 16-visualisation Tableau workbook on job-market salary data. The research project is listed above under built work.</p>
+        <span class="yr">2024 – 2025</span>
       </div>
     </div>
   </section>
@@ -258,17 +280,37 @@ function $(id){ return document.getElementById(id); }
 var CAPS = [
   ["analytics",   "Analytics &amp; data"],
   ["forecasting", "Forecasting &amp; planning"],
+  ["tooling",     "Tooling &amp; pipelines"],
   ["pnl",         "Category &amp; P&amp;L"],
   ["leadership",  "Leadership"],
   ["systems",     "Systems &amp; compliance"],
   ["product",     "Product &amp; launch"]
 ];
 
+/* Built work. Same capability tags as the roles, so a filter covers the whole
+   page: what I have been paid to do and what I have built sit under one lens. */
+var BUILT = [
+ {t:"Shelly — retail analytics agent", y:"2026",
+  w:"Open source · Python, SQL, R", href:"https://github.com/Pavi44M/Agent-Shelly-0.3",
+  caps:["analytics","forecasting","tooling"],
+  d:"An end-to-end CRISP-DM pipeline: a week of POS, stock and waste data in, a diagnosis and a ranked action list out. Five forecasting approaches benchmarked against each other, SARIMA-X selected at 16.4% WAPE. Outputs an Excel workbook, a SQLite star schema, Power BI and Tableau extracts and a six-line briefing sized for a phone.",
+  m:["runs in 26 seconds from a clean clone","20 tests passing","synthetic data only"]},
+ {t:"Catchment Mission Fit", y:"2026",
+  w:"Self-initiated study · Auckland grocery network", href:"catchment-slab.html",
+  caps:["analytics","tooling","product"],
+  d:"606 Auckland catchments covering 516,585 households, segmented by the shopper mission their household composition implies and overlaid on the public store network. Twenty-two format-to-mission mismatches, and a commercial case modelled against published FY24 accounts that found the bigger lever was not the one the study set out to find.",
+  m:["K-means · PCA · bootstrap validation","validated independently in R","public data only"]},
+ {t:"Machine learning demand forecasting &amp; segmentation", y:"2025",
+  w:"Industry Research Project, Grade A– · Unitec", href:null,
+  caps:["analytics","forecasting"],
+  d:"SARIMA-X, XGBoost and K-means on Statistics NZ data, visualised in Tableau — acquisition, cleansing, integrity validation and feature engineering on real-world data rather than a prepared set, then translated into recommendations for a non-technical audience.",
+  m:["full pipeline, end to end"]}
+];
+
 /* Every bullet carries the capabilities it actually evidences — so the filter
    marks proof, not keywords. */
 var ROLES = [
  {t:"Duty Manager", w:"Four Square Eden Terrace · Auckland", d:"2025 – Present",
-  caps:["forecasting","leadership","systems"],
   b:[
    ["Build and manage weekly staff rosters against forecast trade patterns, matching labour cover to peak demand while holding wage cost within budget", ["forecasting","leadership"]],
    ["Produce daily and end-of-day reporting on sales, stock movement and hours worked; investigate variances and translate them into ordering, staffing and merchandising decisions", ["analytics","forecasting"]],
@@ -277,42 +319,36 @@ var ROLES = [
    ["Hold the New Zealand Manager's Certificate; accountable for licensed-premises and food safety compliance on shift", ["systems"]]
   ]},
  {t:"Supply Chain Data Analyst <span style='opacity:.6;font-weight:400'>(Internship)</span>", w:"USL Medical · Auckland", d:"Mar – Jun 2025",
-  caps:["analytics","systems"],
   b:[
-   ["Performed data integration and vendor mapping across procurement and warehouse systems using SQL and advanced Excel, improving cross-functional visibility for operational decision-making", ["analytics","systems"]],
+   ["Performed data integration and vendor mapping across procurement and warehouse systems using SQL and advanced Excel, improving cross-functional visibility for operational decision-making", ["analytics","systems","tooling"]],
    ["Delivered GS1 compliance assurance across 25,000+ product SKUs, validating data accuracy and identifying systemic quality risk", ["analytics","systems"]]
   ]},
  {t:"Operations Support", w:"Manawa Bay Premium Outlet Centre (PPCS) · Auckland", d:"Nov 2024 – Sep 2025",
-  caps:["systems"],
   b:[
    ["Managed daily inventory checks across 50+ product lines in a high-volume retail precinct serving 500+ customers daily", ["systems"]],
    ["Reduced waste through stock rotation, maintaining a 100% health and safety compliance record and hygiene audit scores", ["systems"]]
   ]},
  {t:"Senior Manager — Business Development &amp; Growth", w:"Ceylon Business Appliances · Sri Lanka", d:"Nov 2023 – Jul 2024",
-  caps:["pnl","leadership"],
   b:[
    ["Managed full department P&amp;L, budget target setting and KPI reporting, translating financial results into planning recommendations for the executive team", ["pnl","analytics"]],
    ["Led category strategy across B2C and B2B channels, including government and corporate tender engagements", ["pnl","product"]]
   ]},
  {t:"Product Manager — AV Products", w:"Samsung Electronics · Sri Lanka", d:"Mar 2019 – Oct 2023",
-  caps:["pnl","analytics","forecasting","product","leadership"],
   b:[
    ["Grew the television category from $8.9M annual turnover on appointment to a peak of $16.8M in 2022 — against a contracting 32-inch segment, delivering 120% of target for three consecutive years", ["pnl","product"]],
-   ["Built Power BI dashboards and SQL-driven reporting used by senior leadership and retail partners to monitor month-end results, category performance and forward demand", ["analytics","forecasting"]],
+   ["Built Power BI dashboards and SQL-driven reporting used by senior leadership and retail partners to monitor month-end results, category performance and forward demand", ["analytics","forecasting","tooling"]],
    ["Ran market segmentation and competitor benchmarking; the resulting roadmap recommendations drove 163% sell-out growth in Southwest Asia", ["analytics","product"]],
    ["Led the “Upsize” screen-size promotional series, shifting the Sri Lankan market toward larger-format televisions and driving a generational change in category mix", ["product","pnl"]],
    ["Led the digital transformation of national retail training for 500+ franchise professionals, directing a cross-functional team of five to ten", ["leadership","product"]]
   ]},
  {t:"Business Development Manager — IT &amp; Digital Experience", w:"Orel Corporation · Sri Lanka", d:"Jun 2015 – Nov 2018",
-  caps:["pnl","analytics","leadership","product"],
   b:[
    ["Grew the mobile business by over 20% year on year across the full tenure, reaching $0.5M annual turnover in 2018", ["pnl"]],
-   ["Developed a Python-based inventory tracking and warranty management system covering 25,000+ SKUs with just-in-time replenishment logic", ["analytics","systems"]],
+   ["Developed a Python-based inventory tracking and warranty management system covering 25,000+ SKUs with just-in-time replenishment logic", ["analytics","systems","tooling"]],
    ["Managed IT and digital product categories across retail and online channels, owning category P&amp;L and a team of 25 across sales, technical and support functions", ["pnl","leadership"]],
-   ["Delivered a payment gateway platform for iOS and Android, and rolled out QR payment acceptance across 150+ merchants", ["product"]]
+   ["Delivered a payment gateway platform for iOS and Android, and rolled out QR payment acceptance across 150+ merchants", ["product","tooling"]]
   ]},
  {t:"Team Leader — Retail Field Force", w:"Samsung Electronics · Sri Lanka", d:"Aug 2011 – Jun 2015",
-  caps:["leadership"],
   b:[
    ["Led up to 120 Samsung Product Consultants across the Colombo suburbs and the North, Northwest and South territories", ["leadership"]],
    ["Owned end-to-end team administration across four territories — attendance tracking, leave approval, terminations, resignations and replacement planning", ["leadership"]],
@@ -331,17 +367,43 @@ var CERTS = [
 ];
 
 var SKILLS = [
- ["Analytics &amp; reporting", "Advanced Excel (PivotTables, Power Query, scenario modelling) · Tableau · Power BI (DAX, data modelling) · SQL · Python (pandas, scikit-learn) · R"],
+ ["Analytics &amp; reporting", "Advanced Excel (PivotTables, Power Query, scenario modelling) · Tableau · Power BI (DAX, data modelling) · SQL · Python (pandas, scikit-learn, statsmodels) · R"],
  ["Forecasting &amp; planning", "Demand forecasting (SARIMA-X, XGBoost) · Customer segmentation (K-means) · Capacity and workload planning · Variance and trend analysis · Range and assortment planning"],
  ["Commercial &amp; financial", "Category P&amp;L ownership · Budget target setting · Month-end reporting · KPI design · Pricing and range analysis · Commercial negotiation · Government and corporate tendering"],
  ["Business analysis", "Requirements gathering · Process mapping · Data integration and vendor mapping · Data quality and integrity · Stakeholder engagement"],
  ["Systems &amp; compliance", "SAP store operations · GS1 compliance and product recall · Inventory and stock control · Health and safety governance · Licensing compliance"],
- ["Leadership &amp; operations", "Team leadership from 5 to 120 · Master Trainer accreditation · Training design and delivery · Cross-functional programme leadership"]
+ ["Leadership &amp; operations", "Team leadership from 5 to 120 · Master Trainer accreditation · Training design and delivery · Cross-functional programme leadership"],
+ ["Tooling &amp; delivery", "Python command-line tooling and packaging · SQLite star-schema design · DuckDB · Automated testing (pytest) · Git and GitHub · Reproducible CRISP-DM pipelines"]
 ];
 
 var active = null;
 
+/* A role's capabilities are the union of the capabilities its bullets
+   evidence — derived, not typed by hand, so the chip and the marked bullets
+   can never disagree. Ordered by CAPS so the tags read consistently. */
+ROLES.forEach(function(r){
+  var set = {};
+  r.b.forEach(function(pair){ pair[1].forEach(function(c){ set[c] = 1; }); });
+  r.caps = CAPS.map(function(c){ return c[0]; }).filter(function(k){ return set[k]; });
+});
+
+function renderBuilt(){
+  $("built").innerHTML = BUILT.map(function(p){
+    var lit = !active || p.caps.indexOf(active) !== -1;
+    var cls = "bx" + (lit && active ? " on" : "") + (active && !lit ? " dim" : "");
+    var tag = p.href ? 'a href="' + p.href + '"' + (/^https?:/.test(p.href) ? ' target="_blank" rel="noopener"' : '') : 'div';
+    var close = p.href ? "a" : "div";
+    return "<" + tag + ' class="' + cls + '">' +
+      '<span class="bh"><span class="bt">' + p.t + '</span><span class="by">' + p.y + '</span></span>' +
+      '<span class="bw">' + p.w + '</span>' +
+      '<span class="bd">' + p.d + '</span>' +
+      '<span class="bm">' + p.m.map(function(s){ return "<span>" + s + "</span>"; }).join("") + '</span>' +
+      "</" + close + ">";
+  }).join("");
+}
+
 function render(){
+  renderBuilt();
   var spine = $("spine");
   spine.textContent = "";
   ROLES.forEach(function(r, i){
@@ -391,8 +453,11 @@ function render(){
 
   var n = active ? ROLES.filter(function(r){ return r.caps.indexOf(active) !== -1; }).length : ROLES.length;
   var label = active ? (CAPS.filter(function(x){ return x[0] === active; })[0][1]).replace(/&amp;/g,"&") : null;
+  var nb = active ? BUILT.filter(function(p){ return p.caps.indexOf(active) !== -1; }).length : BUILT.length;
   $("fnote").innerHTML = active
-    ? n + " of " + ROLES.length + " roles carry <strong style=\"color:var(--ink)\">" + label + "</strong>. Marked bullets are the evidence."
+    ? n + " of " + ROLES.length + " roles and " + nb + " of " + BUILT.length +
+      " built projects carry <strong style=\"color:var(--ink)\">" + label +
+      "</strong>. Marked bullets are the evidence."
     : "Showing everything. Tap a role to open it.";
 }
 
