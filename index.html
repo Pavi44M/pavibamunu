@@ -85,7 +85,7 @@ footer a:hover{color:var(--accent)}
   <header>
     <span class="tag">Auckland, New Zealand</span>
     <h1>Pavithra <b>Bamunu</b></h1>
-    <p class="sub">Fourteen years across multi-site retail in New Zealand and Asia — category P&amp;L, demand forecasting, and the direct leadership of teams up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a contracting core segment. Then I rebuilt here: a First Class Honours Master's in Business Analytics, and a Duty Manager's view of a supermarket floor. That last part is why this work reads the shop as well as the data.</p>
+    <p class="sub">Fourteen years across multi-site retail in New Zealand and Asia — category P&amp;L, demand forecasting, and the direct leadership of teams up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a contracting core segment. Then I rebuilt here: a First Class Honours Master's in Business Analytics, and a Duty Manager's view of a supermarket floor. I build the tools as well as the analysis — the work below runs, rather than describing what it would do.</p>
     <div class="who">
       <span>Customer &amp; business data analytics</span>
       <span>Category P&amp;L · Demand forecasting · Product management</span>
@@ -98,6 +98,13 @@ footer a:hover{color:var(--accent)}
   <section>
     <h2>Selected work</h2>
     <div class="work">
+
+      <a class="item" href="https://github.com/Pavi44M/Agent-Shelly-0.3" target="_blank" rel="noopener">
+        <span class="k">working system · python, r, sql</span>
+        <span class="t">Shelly — retail analytics agent</span>
+        <span class="d">A full CRISP-DM pipeline that turns a week of POS, stock and waste data into what happened, what's wrong, and what to do today. Five forecast models benchmarked against each other, K-means segmentation, exception detection and reorder logic — output as an Excel workbook, a SQLite star schema, Power BI and Tableau extracts, an HTML digest and a six-line briefing for a phone.</span>
+        <span class="m"><span>clone → install → runs in 26 seconds</span><span>20 tests passing</span><span>SARIMA-X best at WAPE 16.4%</span><span>synthetic data only</span></span>
+      </a>
 
       <a class="item" href="catchment-slab.html">
         <span class="k">interactive study · 2026</span>
@@ -124,7 +131,7 @@ footer a:hover{color:var(--accent)}
   </section>
 
   <section>
-    <h2>What that study found</h2>
+    <h2>What the catchment study found</h2>
     <div class="facts">
       <div class="fact"><div class="n">606</div><div class="l">catchments analysed</div></div>
       <div class="fact"><div class="n">516,585</div><div class="l">households covered</div></div>
@@ -148,8 +155,8 @@ footer a:hover{color:var(--accent)}
 
   <section>
     <h2>Files and method</h2>
-    <p class="note">Every figure traces to a named script and a named source file. The full pipeline — scripts, intermediate data, outputs, logs and the written study — is re-runnable end to end and available on request.</p>
-    <p class="note" style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No Foodstuffs or member-store data of any kind was used in this work, in raw, aggregated or anonymised form. It is built entirely on public sources.</p>
+    <p class="note">Every figure traces to a named script and a named source file. The full pipeline — scripts, intermediate data, outputs, logs and the written study — is re-runnable end to end and available on request. Shelly is public on GitHub and runs from a clean clone.</p>
+    <p class="note" style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No employer data of any kind appears in any of this work, in raw, aggregated or anonymised form. The catchment study is built entirely on public sources; Shelly ships with synthetic demo data and a warning to check your employment agreement before pointing it at anything real.</p>
   </section>
 
   <footer>
