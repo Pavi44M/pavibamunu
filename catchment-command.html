@@ -174,8 +174,50 @@ input[type=range]{flex:1;accent-color:var(--copper);height:22px}
 }
 </style>
 
+<style>
+/* ---------- loading sequence (ported from the Shelly build) ----------
+   Narrates what is actually being prepared instead of spinning. Removes
+   itself on a CSS timer as well as in script, so a JS fault can never
+   leave the page behind a curtain. */
+#pb-boot{position:fixed;inset:0;z-index:200;background:var(--void);display:grid;
+  place-items:center;padding:24px;font-family:Archivo,system-ui,sans-serif;
+  transition:opacity .55s ease,visibility .55s;
+  animation:pb-failsafe 0s linear 8s forwards}
+#pb-boot.pb-done{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes pb-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}
+.pb-in{width:min(560px,100%)}
+.pb-tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ink-3);display:block}
+.pb-orb{display:flex;gap:7px;margin-top:22px}
+.pb-orb i{width:9px;height:9px;border-radius:50%;background:var(--mint);opacity:.25;
+  animation:pb-pulse 1.2s infinite ease-in-out}
+.pb-orb i:nth-child(2){animation-delay:.18s}
+.pb-orb i:nth-child(3){animation-delay:.36s}
+@keyframes pb-pulse{0%,100%{opacity:.2;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+#pb-log{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.9;color:var(--ink);
+  white-space:pre-wrap;min-height:190px;margin:18px 0 0}
+#pb-log .pb-ok{color:var(--mint)}
+.pb-skip{background:none;border:1px solid var(--rule);color:var(--ink-3);border-radius:3px;
+  padding:6px 14px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.1em;cursor:pointer}
+.pb-skip:hover,.pb-skip:focus-visible{border-color:var(--mint);color:var(--ink);outline:none}
+@media (max-width:480px){ #pb-log{font-size:11.5px;min-height:170px} }
+@media (prefers-reduced-motion:reduce){
+  #pb-boot{animation-delay:1.2s}
+  .pb-orb i{animation:none;opacity:.7}
+}
+</style>
 </head>
 <body>
+
+<div id="pb-boot" role="status" aria-live="polite">
+  <div class="pb-in">
+    <span class="pb-tag">Catchment Command · dashboard</span>
+    <div class="pb-orb" aria-hidden="true"><i></i><i></i><i></i></div>
+    <pre id="pb-log"></pre>
+    <button id="pb-skip" class="pb-skip" type="button">Skip</button>
+  </div>
+</div>
+
 <div class="shell">
 
   <div class="rail">
@@ -645,5 +687,58 @@ window.addEventListener("resize", function(){ hideTip(); });
 })();
 </script>
 
+
+<script>
+/* Loading sequence. Wrapped whole: if anything in here throws, the curtain
+   still lifts — and the CSS failsafe above lifts it even if this never runs. */
+(function(){
+  "use strict";
+  var box = document.getElementById("pb-boot");
+  if(!box) return;
+  var log = document.getElementById("pb-log"),
+      skipBtn = document.getElementById("pb-skip"),
+      LINES = [["&rsaquo; 606 catchments &middot; 516,585 households", 380], ["&rsaquo; 146 stores &middot; OpenStreetMap &middot; distances in NZTM2000", 320], ["&rsaquo; five segments &middot; quantile bins &middot; palette colour-vision validated", 480], ["&rsaquo; a competitor is closer in 276 catchments &mdash; 45%", 340], ["&rsaquo; 22 flagged &middot; shortlist ranked", 280]],
+      DONE = '&check; Console ready.',
+      skipped = false, finished = false;
+
+  function end(){
+    if(finished) return; finished = true;
+    box.classList.add("pb-done");
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 700);
+  }
+  function skip(){ skipped = true; }
+
+  skipBtn.addEventListener("click", skip);
+  box.addEventListener("click", function(e){ if(e.target !== skipBtn) skip(); });
+  document.addEventListener("keydown", function(e){
+    if(!finished && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip();
+  });
+
+  /* Seen it once this session, or the reader asked for less motion?
+     Show the whole thing at once rather than making them wait again. */
+  var quick = false;
+  try { quick = sessionStorage.getItem("pb.booted") === "1"; } catch(err) {}
+  try { sessionStorage.setItem("pb.booted", "1"); } catch(err) {}
+  var still = false;
+  try { still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(err) {}
+
+  function step(i){
+    try {
+      if(i >= LINES.length || skipped || still || quick){
+        var rest = "";
+        for(var j = (skipped || still || quick) ? i : LINES.length; j < LINES.length; j++){
+          rest += LINES[j][0] + "\n";
+        }
+        log.insertAdjacentHTML("beforeend", rest + '<span class="pb-ok">' + DONE + "</span>");
+        setTimeout(end, (skipped || still || quick) ? 260 : 480);
+        return;
+      }
+      log.insertAdjacentHTML("beforeend", LINES[i][0] + "\n");
+      setTimeout(function(){ step(i + 1); }, LINES[i][1]);
+    } catch(err) { end(); }
+  }
+  step(0);
+})();
+</script>
 </body>
 </html>

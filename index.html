@@ -60,6 +60,19 @@ section{padding-block:44px 0;border-top:1px solid var(--etch-2);margin-top:44px}
 .item .m{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:13px;
   font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3);letter-spacing:.08em}
 
+/* A card with two destinations: the whole surface opens the live demo, and the
+   source link sits above it. Nesting one <a> inside another is invalid, so the
+   primary link is stretched over the card instead. */
+.item.stack{position:relative}
+.item.stack:hover,.item.stack:focus-within{border-color:var(--accent);transform:translateY(-2px)}
+a.t.primary{text-decoration:none}
+a.t.primary::after{content:"";position:absolute;inset:0;border-radius:3px}
+a.t.primary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.item .alt{position:relative;z-index:1;display:inline-block;margin-top:14px;
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em}
+.item .alt a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--etch)}
+.item .alt a:hover,.item .alt a:focus-visible{color:var(--accent);border-color:var(--accent)}
+
 .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--etch-2);
   border:1px solid var(--etch-2);border-radius:3px;overflow:hidden;margin-top:4px}
 .fact{background:var(--panel);padding:16px 14px}
@@ -99,12 +112,13 @@ footer a:hover{color:var(--accent)}
     <h2>Selected work</h2>
     <div class="work">
 
-      <a class="item" href="https://github.com/Pavi44M/Agent-Shelly-0.3" target="_blank" rel="noopener">
+      <div class="item stack">
         <span class="k">working system · python, r, sql</span>
-        <span class="t">Shelly — retail analytics agent</span>
+        <a class="t primary" href="https://pavi44m.github.io/Agent-Shelly-0.3/" target="_blank" rel="noopener">Shelly — retail analytics agent</a>
         <span class="d">A full CRISP-DM pipeline that turns a week of POS, stock and waste data into what happened, what's wrong, and what to do today. Five forecast models benchmarked against each other, K-means segmentation, exception detection and reorder logic — output as an Excel workbook, a SQLite star schema, Power BI and Tableau extracts, an HTML digest and a six-line briefing for a phone.</span>
         <span class="m"><span>clone → install → runs in 26 seconds</span><span>20 tests passing</span><span>SARIMA-X best at WAPE 16.4%</span><span>synthetic data only</span></span>
-      </a>
+        <span class="alt"><a href="https://github.com/Pavi44M/Agent-Shelly-0.3" target="_blank" rel="noopener">Source on GitHub →</a></span>
+      </div>
 
       <a class="item" href="catchment-slab.html">
         <span class="k">interactive study · 2026</span>

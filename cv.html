@@ -139,6 +139,17 @@ a.bx:hover,a.bx:focus-visible{border-color:var(--accent);transform:translateY(-2
 .bx .bd{display:block;font-size:14.5px;line-height:1.55;color:var(--ink-2);margin-top:10px;max-width:70ch}
 .bx .bm{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:11px;
   font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);letter-spacing:.07em}
+/* Two destinations on one card: the surface opens the primary link, the second
+   one sits above it. Nested anchors are invalid, so the primary is stretched. */
+.bx.stack{position:relative}
+.bx.stack:hover,.bx.stack:focus-within{border-color:var(--accent);transform:translateY(-2px)}
+.bx .blink{color:inherit;text-decoration:none}
+.bx .blink::after{content:"";position:absolute;inset:0;border-radius:3px}
+.bx .blink:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.bx .balt{position:relative;z-index:1;display:inline-block;margin-top:12px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.07em}
+.bx .balt a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--etch-2)}
+.bx .balt a:hover,.bx .balt a:focus-visible{color:var(--accent);border-color:var(--accent)}
 
 /* two-column blocks */
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--etch-2);
@@ -291,7 +302,8 @@ var CAPS = [
    page: what I have been paid to do and what I have built sit under one lens. */
 var BUILT = [
  {t:"Shelly — retail analytics agent", y:"2026",
-  w:"Open source · Python, SQL, R", href:"https://github.com/Pavi44M/Agent-Shelly-0.3",
+  w:"Open source · Python, SQL, R", href:"https://pavi44m.github.io/Agent-Shelly-0.3/",
+  alt:{href:"https://github.com/Pavi44M/Agent-Shelly-0.3", label:"Source on GitHub →"},
   caps:["analytics","forecasting","tooling"],
   d:"An end-to-end CRISP-DM pipeline: a week of POS, stock and waste data in, a diagnosis and a ranked action list out. Five forecasting approaches benchmarked against each other, SARIMA-X selected at 16.4% WAPE. Outputs an Excel workbook, a SQLite star schema, Power BI and Tableau extracts and a six-line briefing sized for a phone.",
   m:["runs in 26 seconds from a clean clone","20 tests passing","synthetic data only"]},
@@ -391,13 +403,20 @@ function renderBuilt(){
   $("built").innerHTML = BUILT.map(function(p){
     var lit = !active || p.caps.indexOf(active) !== -1;
     var cls = "bx" + (lit && active ? " on" : "") + (active && !lit ? " dim" : "");
-    var tag = p.href ? 'a href="' + p.href + '"' + (/^https?:/.test(p.href) ? ' target="_blank" rel="noopener"' : '') : 'div';
-    var close = p.href ? "a" : "div";
+    function ext(h){ return /^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""; }
+    var title = p.t, tag = "div", close = "div";
+    if(p.href && p.alt){
+      cls += " stack";
+      title = '<a class="blink" href="' + p.href + '"' + ext(p.href) + '>' + p.t + '</a>';
+    } else if(p.href){
+      tag = 'a href="' + p.href + '"' + ext(p.href); close = "a";
+    }
     return "<" + tag + ' class="' + cls + '">' +
-      '<span class="bh"><span class="bt">' + p.t + '</span><span class="by">' + p.y + '</span></span>' +
+      '<span class="bh"><span class="bt">' + title + '</span><span class="by">' + p.y + '</span></span>' +
       '<span class="bw">' + p.w + '</span>' +
       '<span class="bd">' + p.d + '</span>' +
       '<span class="bm">' + p.m.map(function(s){ return "<span>" + s + "</span>"; }).join("") + '</span>' +
+      (p.alt ? '<span class="balt"><a href="' + p.alt.href + '"' + ext(p.alt.href) + '>' + p.alt.label + '</a></span>' : "") +
       "</" + close + ">";
   }).join("");
 }

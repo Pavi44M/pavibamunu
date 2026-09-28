@@ -458,8 +458,53 @@ footer{margin-top:80px;padding:26px 0 60px;border-top:1px solid var(--etch-2)}
 }
 </style>
 
+<style>
+/* ---------- loading sequence (ported from the Shelly build) ----------
+   Narrates what is actually being prepared instead of spinning. Removes
+   itself on a CSS timer as well as in script, so a JS fault can never
+   leave the page behind a curtain. */
+#pb-boot{position:fixed;inset:0;z-index:200;background:var(--black);display:grid;
+  place-items:center;padding:24px;font-family:"Samsung Sans","SamsungOne","One UI Sans","Plus Jakarta Sans",system-ui,sans-serif;
+  transition:opacity .55s ease,visibility .55s;
+  animation:pb-failsafe 0s linear 8s forwards}
+#pb-boot.pb-done{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes pb-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}
+.pb-in{width:min(560px,100%)}
+.pb-tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--dust);display:block}
+.pb-orb{display:flex;gap:7px;margin-top:22px}
+/* The slab is inert graphite until it is touched, so the loader stays
+   colourless too. The first colour on this page arrives on the last line —
+   which is the page telling you what it wants you to do. */
+.pb-orb i{width:9px;height:9px;border-radius:50%;background:var(--dust);opacity:.25;
+  animation:pb-pulse 1.2s infinite ease-in-out}
+.pb-orb i:nth-child(2){animation-delay:.18s}
+.pb-orb i:nth-child(3){animation-delay:.36s}
+@keyframes pb-pulse{0%,100%{opacity:.2;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+#pb-log{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.9;color:var(--pale);
+  white-space:pre-wrap;min-height:190px;margin:18px 0 0}
+#pb-log .pb-ok{color:hsl(var(--hue) 70% 62%)}
+.pb-skip{background:none;border:1px solid var(--etch);color:var(--dust);border-radius:3px;
+  padding:6px 14px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.1em;cursor:pointer}
+.pb-skip:hover,.pb-skip:focus-visible{border-color:hsl(var(--hue) 70% 62%);color:var(--pale);outline:none}
+@media (max-width:480px){ #pb-log{font-size:11.5px;min-height:170px} }
+@media (prefers-reduced-motion:reduce){
+  #pb-boot{animation-delay:1.2s}
+  .pb-orb i{animation:none;opacity:.7}
+}
+</style>
 </head>
 <body>
+
+<div id="pb-boot" role="status" aria-live="polite">
+  <div class="pb-in">
+    <span class="pb-tag">Catchment Mission Fit · interactive study</span>
+    <div class="pb-orb" aria-hidden="true"><i></i><i></i><i></i></div>
+    <pre id="pb-log"></pre>
+    <button id="pb-skip" class="pb-skip" type="button">Skip</button>
+  </div>
+</div>
+
 <div class="wrap">
   <section class="open">
     <span class="tag">Auckland · 606 catchments · public record</span>
@@ -1545,5 +1590,58 @@ paint();
 })();
 </script>
 
+
+<script>
+/* Loading sequence. Wrapped whole: if anything in here throws, the curtain
+   still lifts — and the CSS failsafe above lifts it even if this never runs. */
+(function(){
+  "use strict";
+  var box = document.getElementById("pb-boot");
+  if(!box) return;
+  var log = document.getElementById("pb-log"),
+      skipBtn = document.getElementById("pb-skip"),
+      LINES = [["&rsaquo; loading 606 Auckland catchments &middot; Census 2023", 380], ["&rsaquo; 516,585 households &middot; seven features standardised", 320], ["&rsaquo; k-means k=5 &middot; bootstrap Jaccard 0.862 over 100 resamples", 520], ["&rsaquo; overlaying 146 stores &middot; OpenStreetMap", 300], ["&rsaquo; 22 format-to-mission mismatches &middot; 18,771 households", 340]],
+      DONE = '&check; Ready. Touch the surface.',
+      skipped = false, finished = false;
+
+  function end(){
+    if(finished) return; finished = true;
+    box.classList.add("pb-done");
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 700);
+  }
+  function skip(){ skipped = true; }
+
+  skipBtn.addEventListener("click", skip);
+  box.addEventListener("click", function(e){ if(e.target !== skipBtn) skip(); });
+  document.addEventListener("keydown", function(e){
+    if(!finished && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip();
+  });
+
+  /* Seen it once this session, or the reader asked for less motion?
+     Show the whole thing at once rather than making them wait again. */
+  var quick = false;
+  try { quick = sessionStorage.getItem("pb.booted") === "1"; } catch(err) {}
+  try { sessionStorage.setItem("pb.booted", "1"); } catch(err) {}
+  var still = false;
+  try { still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(err) {}
+
+  function step(i){
+    try {
+      if(i >= LINES.length || skipped || still || quick){
+        var rest = "";
+        for(var j = (skipped || still || quick) ? i : LINES.length; j < LINES.length; j++){
+          rest += LINES[j][0] + "\n";
+        }
+        log.insertAdjacentHTML("beforeend", rest + '<span class="pb-ok">' + DONE + "</span>");
+        setTimeout(end, (skipped || still || quick) ? 260 : 480);
+        return;
+      }
+      log.insertAdjacentHTML("beforeend", LINES[i][0] + "\n");
+      setTimeout(function(){ step(i + 1); }, LINES[i][1]);
+    } catch(err) { end(); }
+  }
+  step(0);
+})();
+</script>
 </body>
 </html>
