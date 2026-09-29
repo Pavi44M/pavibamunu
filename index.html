@@ -78,12 +78,119 @@ footer a{color:var(--ink-3)}
 footer a:hover{color:var(--accent)}
 
 @media (max-width:700px){ .facts{grid-template-columns:repeat(2,1fr)} }
+
+/* ====================================================================
+   OPENING SEQUENCE
+   The other three pages narrate loading their own data. This page has no
+   data to load, so it states the record instead: four figures counting to
+   their real values, then the curtain lifts and the page assembles.
+
+   Everything visual runs on CSS timers from page load, so a JavaScript
+   fault cannot leave content hidden — script only shortens the timings
+   (repeat visit, skip) and drives the counters, whose final values are
+   already in the markup as static text.
+   ==================================================================== */
+#pb-boot{position:fixed;inset:0;z-index:300;background:var(--void);
+  padding:78px 20px 24px;overflow:auto;
+  transition:opacity .38s ease,visibility .38s;
+  animation:pb-failsafe 0s linear 6s forwards}
+#pb-boot.pb-done{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes pb-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}
+.pb-in{width:100%;max-width:900px;margin:0 auto}   /* == .wrap */
+
+.pb-tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3);display:block;
+  animation:pb-fade .5s ease both}
+/* matches h1 exactly: same clamp, weight, tracking, leading and margin */
+.pb-name{font-size:clamp(34px,7vw,62px);font-weight:300;letter-spacing:-.03em;
+  line-height:1.02;color:var(--ink);margin:16px 0 0;text-wrap:balance;
+  animation:pb-rise .6s cubic-bezier(.22,.8,.3,1) both .08s}
+.pb-name b{font-weight:600}
+
+/* the hairline fills while the figures count — a progress bar that is
+   actually about something, rather than a spinner */
+.pb-rule{height:1px;background:var(--etch);margin:26px 0 0;max-width:560px;position:relative;overflow:hidden;
+  animation:pb-fade .4s ease both .2s}
+.pb-rule::after{content:"";position:absolute;inset:0 100% 0 0;background:var(--accent);
+  animation:pb-fill 1.15s cubic-bezier(.3,.7,.2,1) both .3s}
+@keyframes pb-fill{to{right:0}}
+
+.pb-ledger{margin-top:4px;max-width:560px}
+.pb-row{display:flex;align-items:baseline;gap:14px;padding:9px 0;
+  border-bottom:1px solid var(--etch-2);
+  animation:pb-rise .5s cubic-bezier(.22,.8,.3,1) both}
+.pb-row:nth-child(1){animation-delay:.34s}
+.pb-row:nth-child(2){animation-delay:.46s}
+.pb-row:nth-child(3){animation-delay:.58s}
+.pb-row:nth-child(4){animation-delay:.70s}
+.pb-n{font-family:"JetBrains Mono",monospace;font-size:clamp(17px,3.2vw,21px);
+  font-weight:500;color:var(--ink);letter-spacing:-.02em;
+  min-width:6.4ch;text-align:right;font-variant-numeric:tabular-nums}
+.pb-l{font-size:13.5px;color:var(--ink-3);line-height:1.4}
+.pb-l em{font-style:normal;color:var(--ink-2)}
+
+.pb-skip{margin-top:24px;background:none;border:1px solid var(--etch);color:var(--ink-3);
+  border-radius:3px;padding:6px 14px;font-family:"JetBrains Mono",monospace;
+  font-size:11px;letter-spacing:.1em;cursor:pointer;
+  animation:pb-fade .4s ease both 1s}
+.pb-skip:hover,.pb-skip:focus-visible{border-color:var(--accent);color:var(--ink);outline:none}
+
+@keyframes pb-fade{from{opacity:0}to{opacity:1}}
+@keyframes pb-rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+/* The page assembles behind the curtain on its own timers. --rb is the
+   moment the first block lands; script lowers it for a repeat visit or a
+   skip, and its absence simply leaves the full-length version. */
+[data-r]{animation:pb-rise .55s cubic-bezier(.22,.8,.3,1) both;
+  animation-delay:calc(var(--rb,1700ms) + var(--i,0)*80ms)}
+
+/* Handing over. The ledger clears quickly so the two layers of text do not
+   sit on top of each other, while the name holds its position throughout —
+   and the header fades rather than rises, because a name that shifts by even
+   nine pixels breaks the illusion that it never moved. */
+#pb-boot.pb-done .pb-tag,#pb-boot.pb-done .pb-rule,
+#pb-boot.pb-done .pb-ledger,#pb-boot.pb-done .pb-skip{opacity:0;transition:opacity .15s ease}
+header[data-r]{animation-name:pb-fade}
+
+@media (prefers-reduced-motion:reduce){
+  #pb-boot{animation-delay:1.4s}
+  .pb-tag,.pb-name,.pb-rule,.pb-row,.pb-skip,[data-r]{animation:none;opacity:1;transform:none}
+  .pb-rule::after{animation:none;right:0}
+}
 </style>
 </head>
 <body>
+
+<div id="pb-boot" role="status" aria-live="polite">
+  <div class="pb-in">
+    <span class="pb-tag">Auckland, New Zealand</span>
+    <div class="pb-name">Pavithra <b>Bamunu</b></div>
+    <div class="pb-rule"></div>
+    <div class="pb-ledger">
+      <div class="pb-row">
+        <span class="pb-n" data-from="0" data-to="14">14</span>
+        <span class="pb-l">years across multi-site retail, <em>New Zealand and Asia</em></span>
+      </div>
+      <div class="pb-row">
+        <span class="pb-n" data-from="8.9" data-to="16.8" data-dec="1" data-pre="$" data-suf="M">$16.8M</span>
+        <span class="pb-l">category peak at Samsung, <em>grown from $8.9M</em></span>
+      </div>
+      <div class="pb-row">
+        <span class="pb-n" data-from="0" data-to="606">606</span>
+        <span class="pb-l">Auckland catchments segmented, <em>516,585 households</em></span>
+      </div>
+      <div class="pb-row">
+        <span class="pb-n" data-from="0" data-to="20">20</span>
+        <span class="pb-l">tests passing in a system that <em>runs, not describes</em></span>
+      </div>
+    </div>
+    <button id="pb-skip" class="pb-skip" type="button">Skip</button>
+  </div>
+</div>
+
 <div class="wrap">
 
-  <header>
+  <header data-r style="--i:0">
     <span class="tag">Auckland, New Zealand</span>
     <h1>Pavithra <b>Bamunu</b></h1>
     <p class="sub">Fourteen years across multi-site retail in New Zealand and Asia — category P&amp;L, demand forecasting, and the direct leadership of teams up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a contracting core segment. Then I rebuilt here: a First Class Honours Master's in Business Analytics, and a Duty Manager's view of a supermarket floor. I build the tools as well as the analysis — the work below runs, rather than describing what it would do.</p>
@@ -96,32 +203,32 @@ footer a:hover{color:var(--accent)}
     </div>
   </header>
 
-  <section>
+  <section data-r style="--i:1">
     <h2>Selected work</h2>
     <div class="work">
 
-      <a class="item" href="https://pavi44m.github.io/Agent-Shelly-0.3/" target="_blank" rel="noopener">
+      <a class="item" data-r style="--i:2" href="https://pavi44m.github.io/Agent-Shelly-0.3/" target="_blank" rel="noopener">
         <span class="k">working system · python, r, sql</span>
         <span class="t">Shelly — retail analytics agent</span>
         <span class="d">A full CRISP-DM pipeline that turns a week of POS, stock and waste data into what happened, what's wrong, and what to do today. Five forecast models benchmarked against each other, K-means segmentation, exception detection and reorder logic — output as an Excel workbook, a SQLite star schema, Power BI and Tableau extracts, an HTML digest and a six-line briefing for a phone.</span>
         <span class="m"><span>clone → install → runs in 26 seconds</span><span>20 tests passing</span><span>SARIMA-X best at WAPE 16.4%</span><span>synthetic data only</span></span>
       </a>
 
-      <a class="item" href="catchment-slab.html">
+      <a class="item" data-r style="--i:3" href="catchment-slab.html">
         <span class="k">interactive study · 2026</span>
         <span class="t">Catchment Mission Fit</span>
         <span class="d">Do store formats match the shoppers who actually live around them? 606 Auckland catchments segmented by the shopper mission their household composition implies, overlaid on the public store network. Twenty-two catchments come back mismatched — and one expected finding turns out to be wrong.</span>
         <span class="m"><span>K-means · PCA · bootstrap validation</span><span>Census 2023 · HES · OpenStreetMap</span><span>public data only</span></span>
       </a>
 
-      <a class="item" href="method.html">
+      <a class="item" data-r style="--i:4" href="method.html">
         <span class="k">the working</span>
         <span class="t">Tool output, end to end</span>
         <span class="d">The Python, R, SQL and Excel results behind that study — including the query set that has no data to run against, executed against a documented schema to prove it is valid rather than pretending otherwise.</span>
         <span class="m"><span>scripts and console output</span><span>four data defects, all disclosed</span></span>
       </a>
 
-      <a class="item" href="catchment-command.html">
+      <a class="item" data-r style="--i:5" href="catchment-command.html">
         <span class="k">dashboard</span>
         <span class="t">Catchment Command</span>
         <span class="d">The same model laid out conventionally — map, segment profiles, distance matrix, flagged shortlist and a live sensitivity model, all visible at once for a reader with four minutes.</span>
@@ -131,7 +238,7 @@ footer a:hover{color:var(--accent)}
     </div>
   </section>
 
-  <section>
+  <section data-r style="--i:6">
     <h2>What the catchment study found</h2>
     <div class="facts">
       <div class="fact"><div class="n">606</div><div class="l">catchments analysed</div></div>
@@ -142,10 +249,10 @@ footer a:hover{color:var(--accent)}
     <p class="note" style="margin-top:20px">The headline is that fifteen inner-city catchments have <b>51.9% of households without a motor vehicle</b>, and eight of those have no convenience-format store within a walkable kilometre while a competitor sits closer. The more useful finding came from reading the co-operative's published accounts: at a 3.17% margin the recapture opportunity is worth about $0.46m, while allocating $254m of annual capital 5% better is worth around $12.7m. The catchment gaps are not the prize — they are the evidence the method finds things.</p>
   </section>
 
-  <section>
+  <section data-r style="--i:7">
     <h2>Background</h2>
     <div class="work">
-      <a class="item" href="cv.html">
+      <a class="item" data-r style="--i:8" href="cv.html">
         <span class="k">curriculum vitae</span>
         <span class="t">Fourteen years, filtered by what you need</span>
         <span class="d">Pick a capability — forecasting, category P&amp;L, analytics, leadership — and only the roles that demonstrate it stay lit, with the evidence inside them marked. Downloadable as PDF or Word.</span>
@@ -154,17 +261,80 @@ footer a:hover{color:var(--accent)}
     </div>
   </section>
 
-  <section>
+  <section data-r style="--i:9">
     <h2>Files and method</h2>
     <p class="note">Every figure traces to a named script and a named source file. The full pipeline — scripts, intermediate data, outputs, logs and the written study — is re-runnable end to end and available on request. Shelly is public on GitHub and runs from a clean clone.</p>
     <p class="note" style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No employer data of any kind appears in any of this work, in raw, aggregated or anonymised form. The catchment study is built entirely on public sources; Shelly ships with synthetic demo data and a warning to check your employment agreement before pointing it at anything real.</p>
   </section>
 
-  <footer>
+  <footer data-r style="--i:10">
     <span>Pavithra Bamunu · Auckland</span>
     <span><a href="mailto:pavithrasam.s6@gmail.com">pavithrasam.s6@gmail.com</a></span>
   </footer>
 
 </div>
+
+<script>
+/* Opening sequence. The page reveals itself on CSS timers regardless of what
+   happens in here; this only shortens those timers and animates the counters. */
+(function(){
+  "use strict";
+  var box = document.getElementById("pb-boot");
+  if(!box) return;
+  var root = document.documentElement, done = false;
+
+  function finish(){
+    if(done) return; done = true;
+    box.classList.add("pb-done");
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 450);
+  }
+
+  var still = false, seen = false;
+  try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+  try { seen = sessionStorage.getItem("pb.seen") === "1"; sessionStorage.setItem("pb.seen","1"); } catch(e){}
+
+  /* Seen it already this session, or motion is unwelcome: land the page
+     almost immediately rather than making the same person wait twice. */
+  function shortcut(ms){
+    root.style.setProperty("--rb", ms + "ms");
+    box.querySelectorAll(".pb-n").forEach(function(n){ n.textContent = render(n, +n.dataset.to); });
+    setTimeout(finish, ms);
+  }
+
+  function render(el, v){
+    var d = +(el.dataset.dec || 0);
+    return (el.dataset.pre || "") +
+           v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+           (el.dataset.suf || "");
+  }
+
+  if(still || seen){ shortcut(seen && !still ? 260 : 120); return; }
+
+  /* Counters. easeOutExpo so each figure decelerates into its real value
+     instead of ticking at a constant, mechanical rate. */
+  var START = 300, DUR = 850;
+  box.querySelectorAll(".pb-n").forEach(function(el, i){
+    var from = +el.dataset.from, to = +el.dataset.to, t0 = null, delay = START + i * 110;
+    el.textContent = render(el, from);
+    function frame(ts){
+      if(t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / DUR);
+      var e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+      el.textContent = render(el, from + (to - from) * e);
+      if(p < 1) requestAnimationFrame(frame); else el.textContent = render(el, to);
+    }
+    setTimeout(function(){ requestAnimationFrame(frame); }, delay);
+  });
+
+  function skip(){ if(!done) shortcut(140); }
+  document.getElementById("pb-skip").addEventListener("click", skip);
+  box.addEventListener("click", skip);
+  document.addEventListener("keydown", function(e){
+    if(!done && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip();
+  });
+
+  setTimeout(finish, 1650);
+})();
+</script>
 </body>
 </html>
