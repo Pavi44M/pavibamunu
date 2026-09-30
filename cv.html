@@ -290,11 +290,11 @@ var CAPS = [
 /* Built work. Same capability tags as the roles, so a filter covers the whole
    page: what I have been paid to do and what I have built sit under one lens. */
 var BUILT = [
- {t:"Shelly — retail analytics agent", y:"2026",
+ {t:"Shelly — analytics agent (v1.1)", y:"2026",
   w:"Open source · Python, SQL, R", href:"https://pavi44m.github.io/Agent-Shelly-0.3/",
-  caps:["analytics","forecasting","tooling"],
-  d:"An end-to-end CRISP-DM pipeline: a week of POS, stock and waste data in, a diagnosis and a ranked action list out. Five forecasting approaches benchmarked against each other, SARIMA-X selected at 16.4% WAPE. Outputs an Excel workbook, a SQLite star schema, Power BI and Tableau extracts and a six-line briefing sized for a phone.",
-  m:["runs in 26 seconds from a clean clone","20 tests passing","synthetic data only"]},
+  caps:["analytics","forecasting","tooling","pnl","product"],
+  d:"An end-to-end CRISP-DM pipeline: a week of POS, stock and waste data in, a diagnosis and a ranked action list out, with five forecasting approaches benchmarked and SARIMA-X selected at 16.4% WAPE. The report engine then builds what an analyst would have built — ask in plain words for a budget, a 13-week forecast or a category review and it writes the workbook, with live SUMIFS and INDEX-MATCH formulas, a real PivotTable and an Assumptions sheet that drives the rest. Twenty-four skills across six industry packs, and a second module modelling a medical importer's supply chain.",
+  m:["runs in 23 seconds from a clean clone","38 tests passing, CI green","11 report types, 0 formula errors","synthetic data only"]},
  {t:"Catchment Mission Fit", y:"2026",
   w:"Self-initiated study · Auckland grocery network", href:"catchment-slab.html",
   caps:["analytics","tooling","product"],
@@ -373,7 +373,7 @@ var SKILLS = [
  ["Business analysis", "Requirements gathering · Process mapping · Data integration and vendor mapping · Data quality and integrity · Stakeholder engagement"],
  ["Systems &amp; compliance", "SAP store operations · GS1 compliance and product recall · Inventory and stock control · Health and safety governance · Licensing compliance"],
  ["Leadership &amp; operations", "Team leadership from 5 to 120 · Master Trainer accreditation · Training design and delivery · Cross-functional programme leadership"],
- ["Tooling &amp; delivery", "Python command-line tooling and packaging · SQLite star-schema design · DuckDB · Automated testing (pytest) · Git and GitHub · Reproducible CRISP-DM pipelines"]
+ ["Tooling &amp; delivery", "Python command-line tooling and packaging · SQLite star-schema design · DuckDB · Automated testing (pytest) · Continuous integration (GitHub Actions) · Excel automation with live formulas and PivotTables (openpyxl) · Git and GitHub · Reproducible CRISP-DM pipelines"]
 ];
 
 var active = null;
