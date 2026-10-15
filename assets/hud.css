@@ -1,0 +1,48 @@
+/* ==========================================================================
+   PB · 2050 layer — shared by every page of the portfolio.
+   A living background (aurora, horizon grid, drifting particles), a heads-up
+   navigation bar with Auckland time, a scroll-progress hairline and a soft
+   light that follows the pointer. Pages opt out of the background with
+   <html data-hud-bg="off"> (the study pages draw their own).
+   Everything degrades: no JS = static page, reduced motion = still frames.
+   ========================================================================== */
+:root{
+  --hud-cyan:#5fe1ff; --hud-violet:#9b7bff; --hud-mint:#5ff2c3; --hud-amber:#ffc46b;
+  --hud-glass:rgba(14,22,34,.55); --hud-line:rgba(120,190,230,.16); --hud-line-2:rgba(120,190,230,.28);
+  --hud-grad:linear-gradient(100deg,#5fe1ff 0%,#9b7bff 55%,#ff8fd8 100%);
+}
+#hud-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;display:block;width:100%;height:100%}
+html[data-hud-bg="off"] #hud-bg{display:none}
+html:not([data-hud-bg="off"]) body{background:transparent}
+html:not([data-hud-bg="off"]){background:#05080e}
+
+/* heads-up bar */
+.hud{position:sticky;top:0;z-index:200;margin:0 -20px;padding:10px 20px calc(10px);
+  backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+  background:linear-gradient(180deg,rgba(5,8,14,.82),rgba(5,8,14,.55));border-bottom:1px solid var(--hud-line)}
+.hud-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;font:500 11px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}
+.hud-mark{display:flex;align-items:center;gap:9px;text-decoration:none;color:#eaf0f6;flex:none}
+.hud-mark svg{width:26px;height:26px;display:block}
+.hud-mark b{font-weight:600;letter-spacing:.2em}
+.hud-nav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none;-webkit-mask:linear-gradient(90deg,#000 88%,transparent)}
+.hud-nav::-webkit-scrollbar{display:none}
+.hud-nav a{color:#8fa0b4;text-decoration:none;padding:7px 10px;border-radius:99px;white-space:nowrap;transition:color .2s,background .2s}
+.hud-nav a:hover,.hud-nav a:focus-visible{color:#eaf0f6;background:rgba(95,225,255,.08);outline:none}
+.hud-nav a[aria-current="page"]{color:#05080e;background:var(--hud-cyan)}
+.hud-clock{flex:none;color:#7d8a9c;display:flex;align-items:center;gap:7px}
+.hud-dot{width:7px;height:7px;border-radius:50%;background:var(--hud-mint);box-shadow:0 0 0 0 rgba(95,242,195,.6);animation:hud-pulse 2.4s ease-out infinite}
+@keyframes hud-pulse{70%{box-shadow:0 0 0 8px rgba(95,242,195,0)}100%{box-shadow:0 0 0 0 rgba(95,242,195,0)}}
+.hud-prog{position:absolute;left:0;bottom:-1px;height:1px;width:100%;background:var(--hud-grad);transform-origin:left;transform:scaleX(var(--p,0))}
+@media (max-width:760px){.hud-clock .hud-t{display:none}.hud-mark b{display:none}.hud-in{gap:8px}}
+
+/* the light that follows the pointer (desktop only) */
+#hud-glow{position:fixed;width:520px;height:520px;left:0;top:0;border-radius:50%;pointer-events:none;z-index:0;opacity:0;
+  background:radial-gradient(circle,rgba(95,225,255,.07),rgba(155,123,255,.04) 40%,transparent 70%);transform:translate(-50%,-50%);transition:opacity .6s}
+html.hud-pointer #hud-glow{opacity:1}
+
+/* study pages keep their own look: the bar floats over them */
+html[data-hud-bg="off"] .hud{position:fixed;left:0;right:0;margin:0}
+html[data-hud-bg="off"] body{padding-top:52px}
+
+@media (prefers-reduced-motion:reduce){.hud-dot{animation:none}#hud-glow{display:none}}
+@media print{.hud,#hud-bg,#hud-glow{display:none!important}}

@@ -5,336 +5,405 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pavithra Bamunu — Analytics</title>
 <meta name="author" content="Pavithra Bamunu">
-<meta name="description" content="Retail analytics from Auckland — catchment segmentation, store network fit, and the operator's view behind the data.">
+<meta name="description" content="Retail and business analytics from Auckland: catchment segmentation, store network fit, Shelly the analytics agent, and the operator's view behind the data.">
+<meta name="theme-color" content="#05080e">
+<meta property="og:title" content="Pavithra Bamunu — Analytics">
+<meta property="og:description" content="Fourteen years of multi-site retail, a First Class Honours Master's in Business Analytics, and tools that run.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305080e'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%235fe1ff' stroke-width='1.5'/%3E%3Ctext x='16' y='20' text-anchor='middle' font-family='monospace' font-size='10' font-weight='700' fill='%23eaf0f6'%3EPB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="assets/hud.css">
 <style>
 :root{
   color-scheme:dark;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  --void:#070b12; --panel:#0f1622; --panel-2:#141e2c;
-  --etch:#1f2a38; --etch-2:#172230;
-  --ink:#eaf0f6; --ink-2:#b0bac8; --ink-3:#7d8a9c;
-  --accent:#63b6d8;
+  --void:#05080e; --panel:#0c131e; --panel-2:#121c2a;
+  --etch:#1c2836; --etch-2:#152030;
+  --ink:#eef4fa; --ink-2:#b4c0ce; --ink-3:#7f8da0;
+  --accent:#5fe1ff; --accent-2:#9b7bff; --mint:#5ff2c3;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
 }
 *{box-sizing:border-box}
-html,body{background:var(--void)}
-body{
-  margin:0;padding-block:0 70px;padding-inline:20px;
-  color:var(--ink-2);
-  font-family:"Samsung Sans","SamsungOne","One UI Sans","Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
-}
-img{max-width:100%}
+body{margin:0;padding:0 20px 80px;padding-bottom:max(80px,env(safe-area-inset-bottom));color:var(--ink-2);
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 [hidden]{display:none!important}
-.wrap{max-width:900px;margin:0 auto}
+a{color:var(--accent)}
+.wrap{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.mono{font-family:var(--mono)}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3);display:block}
+.grad{background:linear-gradient(100deg,#5fe1ff 0%,#9b7bff 55%,#ff8fd8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-.tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.3em;
-  text-transform:uppercase;color:var(--ink-3);display:block}
+/* ---------------- hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:40px;align-items:center;padding:72px 0 30px;min-height:min(86vh,860px)}
+h1{font-size:clamp(42px,8vw,96px);font-weight:200;letter-spacing:-.045em;line-height:.95;margin:18px 0 0;color:var(--ink)}
+h1 b{font-weight:600;display:block}
+.sub{font-size:clamp(16px,2.1vw,19px);max-width:58ch;margin:26px 0 0;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.chip{font:500 11px var(--mono);letter-spacing:.06em;color:var(--ink-2);padding:7px 12px;border-radius:99px;border:1px solid var(--hud-line-2);background:rgba(18,28,42,.5);backdrop-filter:blur(6px)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:13px 20px;border-radius:12px;border:1px solid var(--hud-line-2);color:var(--ink);background:rgba(18,28,42,.6);transition:transform .2s,border-color .2s,box-shadow .2s}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 30px -10px rgba(95,225,255,.45);outline:none}
+.btn.pri{background:linear-gradient(100deg,#5fe1ff,#9b7bff);color:#05080e;border:0}
 
-header{padding-block:78px 18px}
-h1{font-size:clamp(34px,7vw,62px);font-weight:300;letter-spacing:-.03em;line-height:1.02;
-  margin:16px 0 0;color:var(--ink);text-wrap:balance}
-h1 b{font-weight:600}
-.sub{font-size:clamp(16px,2.4vw,19px);color:var(--ink-2);max-width:56ch;margin:22px 0 0;line-height:1.55}
-.who{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:26px;
-  font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-3);letter-spacing:.05em}
+/* the identity core: rings orbiting the monogram */
+.core{position:relative;aspect-ratio:1;width:100%;max-width:440px;justify-self:center}
+.core svg{width:100%;height:100%;display:block;overflow:visible}
+.ring{transform-origin:220px 220px}
+.r1{animation:spin 38s linear infinite}.r2{animation:spin 24s linear infinite reverse}.r3{animation:spin 60s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.core .lbl{font:500 9.5px var(--mono);letter-spacing:.22em;fill:#7f8da0;text-transform:uppercase}
+.status{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:min(100%,360px);padding:14px 16px;border-radius:16px;border:1px solid var(--hud-line-2);
+  background:var(--hud-glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:13px;line-height:1.5}
+.status .row{display:flex;gap:10px;align-items:baseline}.status .row+.row{margin-top:6px}
+.status .k{font:500 9.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);min-width:72px}
+.status b{color:var(--ink);font-weight:500}
+.live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);margin-right:6px;box-shadow:0 0 10px var(--mint)}
 
-h2{font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ink-3);margin:0 0 18px;font-family:"JetBrains Mono",monospace}
-section{padding-block:44px 0;border-top:1px solid var(--etch-2);margin-top:44px}
+/* ---------------- sections */
+section{padding-top:70px}
+.sh{display:flex;align-items:baseline;gap:14px;margin:0 0 22px}
+.sh .ix{font:500 11px var(--mono);color:var(--accent);letter-spacing:.1em}
+.sh h2{font-size:clamp(22px,3.4vw,34px);font-weight:300;letter-spacing:-.02em;color:var(--ink);margin:0}
+.sh .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--hud-line-2),transparent)}
 
-.work{display:grid;gap:12px}
-.item{
-  display:block;text-decoration:none;padding:22px 20px;border-radius:3px;
-  background:linear-gradient(165deg,var(--panel-2),var(--panel) 62%);
-  border:1px solid var(--etch);transition:border-color .25s,transform .25s;
-}
-.item:hover,.item:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
-.item .k{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--accent)}
-.item .t{display:block;font-size:22px;font-weight:500;color:var(--ink);margin:9px 0 7px;letter-spacing:-.01em}
-.item .d{display:block;font-size:15px;color:var(--ink-2);line-height:1.5;max-width:64ch}
-.item .m{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:13px;
-  font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3);letter-spacing:.08em}
+/* ledger: the record in four numbers */
+.ledger{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.metric{position:relative;padding:22px 18px;border-radius:18px;border:1px solid var(--hud-line);background:linear-gradient(160deg,rgba(18,28,42,.75),rgba(12,19,30,.55));backdrop-filter:blur(10px);overflow:hidden}
+.metric::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.6}
+.metric .n{font:500 clamp(26px,4vw,40px) var(--mono);color:var(--ink);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.05}
+.metric .l{font-size:13px;color:var(--ink-3);margin-top:8px;line-height:1.4}
+.metric .l em{font-style:normal;color:var(--ink-2)}
 
+/* glass cards with a light under the pointer */
+.work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{--mx:50%;--my:0%;position:relative;display:block;text-decoration:none;color:var(--ink-2);padding:26px 24px;border-radius:20px;border:1px solid var(--hud-line);
+  background:radial-gradient(400px circle at var(--mx) var(--my),rgba(95,225,255,.09),transparent 60%),linear-gradient(165deg,rgba(18,28,42,.82),rgba(12,19,30,.62));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s;overflow:hidden;min-width:0}
+.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:rgba(95,225,255,.5);outline:none}
+.card.wide{grid-column:1/-1}
+.card .k{font:500 10px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.card .t{display:block;font-size:clamp(21px,2.6vw,27px);font-weight:500;color:var(--ink);margin:10px 0 8px;letter-spacing:-.015em}
+.card .d{display:block;font-size:15px;line-height:1.55;max-width:70ch}
+.card .m{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.card .m span{font:500 10.5px var(--mono);letter-spacing:.05em;color:var(--ink-3);padding:4px 9px;border-radius:99px;border:1px solid var(--etch)}
+.card .go{position:absolute;right:20px;top:22px;font:500 18px var(--mono);color:var(--ink-3);transition:transform .3s,color .3s}
+.card:hover .go{transform:translate(3px,-3px);color:var(--accent)}
+.feat{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:26px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stats div{padding:14px;border-radius:14px;background:rgba(5,8,14,.55);border:1px solid var(--etch)}
+.stats b{display:block;font:500 24px var(--mono);color:var(--ink);letter-spacing:-.02em}
+.stats small{font-size:12px;color:var(--ink-3)}
 
-.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--etch-2);
-  border:1px solid var(--etch-2);border-radius:3px;overflow:hidden;margin-top:4px}
-.fact{background:var(--panel);padding:16px 14px}
-.fact .n{font-family:"JetBrains Mono",monospace;font-size:clamp(19px,3.4vw,25px);
-  color:var(--ink);font-weight:500;letter-spacing:-.02em;line-height:1.1}
-.fact .l{font-size:12.5px;color:var(--ink-3);margin-top:6px;line-height:1.35}
-
-.note{font-size:15px;color:var(--ink-2);max-width:62ch;line-height:1.6}
+/* findings */
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.note{font-size:15.5px;max-width:72ch;line-height:1.65}
 .note b{color:var(--ink);font-weight:600}
 
-footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--etch-2);
-  display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between;
-  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-3)}
+/* trajectory */
+.path{position:relative;display:grid;gap:12px;padding-left:28px}
+.path::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,var(--accent),var(--accent-2) 70%,var(--mint))}
+.stop{position:relative;padding:16px 18px;border-radius:16px;border:1px solid var(--hud-line);background:rgba(12,19,30,.6);backdrop-filter:blur(8px)}
+.stop::before{content:"";position:absolute;left:-25px;top:22px;width:11px;height:11px;border-radius:50%;background:var(--void);border:2px solid var(--accent)}
+.stop.next::before{border-color:var(--mint);box-shadow:0 0 12px var(--mint)}
+.stop .w{font:500 10px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.stop b{display:block;color:var(--ink);font-weight:500;font-size:17px;margin:4px 0 2px}
+.stop p{margin:0;font-size:14.5px}
+
+.contact{margin-top:80px;padding:36px 28px;border-radius:24px;border:1px solid var(--hud-line-2);text-align:center;
+  background:radial-gradient(600px circle at 50% 0%,rgba(155,123,255,.16),transparent 70%),rgba(12,19,30,.7);backdrop-filter:blur(12px)}
+.contact h2{font-size:clamp(26px,4.4vw,44px);font-weight:200;letter-spacing:-.03em;color:var(--ink);margin:10px 0 8px}
+.contact .cta{justify-content:center}
+footer{margin-top:40px;display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between;font:500 10.5px var(--mono);letter-spacing:.08em;color:var(--ink-3)}
 footer a{color:var(--ink-3)}
-footer a:hover{color:var(--accent)}
 
-@media (max-width:700px){ .facts{grid-template-columns:repeat(2,1fr)} }
+/* scroll reveal (only when script is running) */
+html.rv [data-rv]{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i,0)*70ms)}
+html.rv [data-rv].in{opacity:1;transform:none}
 
-/* ====================================================================
-   OPENING SEQUENCE
-   The other three pages narrate loading their own data. This page has no
-   data to load, so it states the record instead: four figures counting to
-   their real values, then the curtain lifts and the page assembles.
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;min-height:0;padding-top:46px;gap:20px}
+  .core{max-width:300px;margin:10px auto 60px}
+  .feat{grid-template-columns:1fr}
+  .ledger,.facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .work{grid-template-columns:1fr}
+}
+@media (max-width:420px){.metric .n{font-size:24px}.card{padding:22px 18px}}
 
-   Everything visual runs on CSS timers from page load, so a JavaScript
-   fault cannot leave content hidden — script only shortens the timings
-   (repeat visit, skip) and drives the counters, whose final values are
-   already in the markup as static text.
-   ==================================================================== */
-#pb-boot{position:fixed;inset:0;z-index:300;background:var(--void);
-  padding:78px 20px 24px;overflow:auto;
-  transition:opacity .38s ease,visibility .38s;
-  animation:pb-failsafe 0s linear 6s forwards}
+/* ======================================================================
+   OPENING SEQUENCE · "identity resolve"
+   A ring field spins up around the monogram while a short system log
+   states the record; the name decodes out of noise, the rings fly
+   outward and the page is already in place behind them.
+   CSS alone guarantees it ends (failsafe at 7s) — script only drives the
+   log, the counter and the decode, and shortens everything on a repeat
+   visit, on Skip, or when motion is unwelcome.
+   ====================================================================== */
+#pb-boot{position:fixed;inset:0;z-index:500;background:#03060b;display:grid;place-items:center;overflow:hidden;
+  transition:opacity .6s ease,visibility .6s;animation:pb-failsafe 0s linear 7s forwards}
 #pb-boot.pb-done{opacity:0;visibility:hidden;pointer-events:none}
 @keyframes pb-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}
-.pb-in{width:100%;max-width:900px;margin:0 auto}   /* == .wrap */
-
-.pb-tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;
-  letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3);display:block;
-  animation:pb-fade .5s ease both}
-/* matches h1 exactly: same clamp, weight, tracking, leading and margin */
-.pb-name{font-size:clamp(34px,7vw,62px);font-weight:300;letter-spacing:-.03em;
-  line-height:1.02;color:var(--ink);margin:16px 0 0;text-wrap:balance;
-  animation:pb-rise .6s cubic-bezier(.22,.8,.3,1) both .08s}
+#pb-boot::before{content:"";position:absolute;inset:0;background:
+  repeating-linear-gradient(0deg,rgba(95,225,255,.035) 0 1px,transparent 1px 3px),
+  radial-gradient(circle at 50% 46%,rgba(95,225,255,.12),transparent 55%);pointer-events:none}
+#pb-boot::after{content:"";position:absolute;left:0;right:0;height:140px;top:-140px;background:linear-gradient(180deg,transparent,rgba(95,225,255,.10),transparent);animation:pb-scan 2.6s linear infinite}
+@keyframes pb-scan{to{top:100%}}
+.pb-stage{position:relative;width:min(78vmin,520px);aspect-ratio:1;display:grid;place-items:center}
+.pb-stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pb-r{transform-origin:50% 50%;transform-box:fill-box;opacity:0;animation:pb-ring 1s cubic-bezier(.2,.8,.2,1) forwards}
+.pb-r.a{animation-delay:.1s}.pb-r.b{animation-delay:.3s}.pb-r.c{animation-delay:.5s}.pb-r.d{animation-delay:.7s}
+@keyframes pb-ring{from{opacity:0;transform:scale(.6) rotate(-40deg)}to{opacity:1;transform:none}}
+.pb-spin{transform-origin:260px 260px;animation:spin 6s linear infinite}.pb-spin.rev{animation-duration:9s;animation-direction:reverse}
+.pb-mid{position:relative;text-align:center;z-index:2}
+.pb-pct{font:500 11px var(--mono);letter-spacing:.3em;color:var(--accent)}
+.pb-name{font-size:clamp(28px,6vw,52px);font-weight:200;letter-spacing:-.03em;color:var(--ink);margin:10px 0 6px;font-family:"Plus Jakarta Sans",system-ui,sans-serif;white-space:nowrap}
 .pb-name b{font-weight:600}
-
-/* the hairline fills while the figures count — a progress bar that is
-   actually about something, rather than a spinner */
-.pb-rule{height:1px;background:var(--etch);margin:26px 0 0;max-width:560px;position:relative;overflow:hidden;
-  animation:pb-fade .4s ease both .2s}
-.pb-rule::after{content:"";position:absolute;inset:0 100% 0 0;background:var(--accent);
-  animation:pb-fill 1.15s cubic-bezier(.3,.7,.2,1) both .3s}
-@keyframes pb-fill{to{right:0}}
-
-.pb-ledger{margin-top:4px;max-width:560px}
-.pb-row{display:flex;align-items:baseline;gap:14px;padding:9px 0;
-  border-bottom:1px solid var(--etch-2);
-  animation:pb-rise .5s cubic-bezier(.22,.8,.3,1) both}
-.pb-row:nth-child(1){animation-delay:.34s}
-.pb-row:nth-child(2){animation-delay:.46s}
-.pb-row:nth-child(3){animation-delay:.58s}
-.pb-row:nth-child(4){animation-delay:.70s}
-.pb-n{font-family:"JetBrains Mono",monospace;font-size:clamp(17px,3.2vw,21px);
-  font-weight:500;color:var(--ink);letter-spacing:-.02em;
-  min-width:6.4ch;text-align:right;font-variant-numeric:tabular-nums}
-.pb-l{font-size:13.5px;color:var(--ink-3);line-height:1.4}
-.pb-l em{font-style:normal;color:var(--ink-2)}
-
-.pb-skip{margin-top:24px;background:none;border:1px solid var(--etch);color:var(--ink-3);
-  border-radius:3px;padding:6px 14px;font-family:"JetBrains Mono",monospace;
-  font-size:11px;letter-spacing:.1em;cursor:pointer;
-  animation:pb-fade .4s ease both 1s}
+.pb-role{font:500 10px var(--mono);letter-spacing:.32em;text-transform:uppercase;color:var(--ink-3)}
+.pb-log{position:absolute;left:max(20px,4vw);bottom:max(22px,4vh);margin:0;font:400 11.5px/1.75 var(--mono);color:#7fb4c8;white-space:pre-wrap;max-width:min(92vw,520px);z-index:2}
+.pb-log .ok{color:var(--mint)}
+.pb-bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(95,225,255,.08)}
+.pb-bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#5fe1ff,#9b7bff,#ff8fd8);transform-origin:left;transform:scaleX(0);animation:pb-fill 2.3s cubic-bezier(.4,.1,.2,1) forwards .2s}
+@keyframes pb-fill{to{transform:scaleX(1)}}
+.pb-skip{position:absolute;right:max(20px,4vw);bottom:max(18px,4vh);z-index:3;background:rgba(18,28,42,.6);border:1px solid var(--hud-line-2);color:var(--ink-2);border-radius:99px;padding:8px 16px;font:500 11px var(--mono);letter-spacing:.14em;cursor:pointer}
 .pb-skip:hover,.pb-skip:focus-visible{border-color:var(--accent);color:var(--ink);outline:none}
-
-@keyframes pb-fade{from{opacity:0}to{opacity:1}}
-@keyframes pb-rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
-
-/* The page assembles behind the curtain on its own timers. --rb is the
-   moment the first block lands; script lowers it for a repeat visit or a
-   skip, and its absence simply leaves the full-length version. */
-[data-r]{animation:pb-rise .55s cubic-bezier(.22,.8,.3,1) both;
-  animation-delay:calc(var(--rb,1700ms) + var(--i,0)*80ms)}
-
-/* Handing over. The ledger clears quickly so the two layers of text do not
-   sit on top of each other, while the name holds its position throughout —
-   and the header fades rather than rises, because a name that shifts by even
-   nine pixels breaks the illusion that it never moved. */
-#pb-boot.pb-done .pb-tag,#pb-boot.pb-done .pb-rule,
-#pb-boot.pb-done .pb-ledger,#pb-boot.pb-done .pb-skip{opacity:0;transition:opacity .15s ease}
-header[data-r]{animation-name:pb-fade}
-
+#pb-boot.pb-done .pb-stage{transform:scale(2.4);opacity:0;transition:transform .7s cubic-bezier(.6,0,.4,1),opacity .6s}
+@media (max-width:600px){.pb-log{font-size:10.5px;bottom:64px}.pb-skip{bottom:18px}}
 @media (prefers-reduced-motion:reduce){
-  #pb-boot{animation-delay:1.4s}
-  .pb-tag,.pb-name,.pb-rule,.pb-row,.pb-skip,[data-r]{animation:none;opacity:1;transform:none}
-  .pb-rule::after{animation:none;right:0}
+  #pb-boot{animation-delay:1.2s}#pb-boot::after{display:none}
+  .pb-r,.pb-spin,.pb-bar i,.r1,.r2,.r3{animation:none;opacity:1;transform:none}
+  html.rv [data-rv]{opacity:1;transform:none;transition:none}
 }
 </style>
 </head>
 <body>
 
-<div id="pb-boot" role="status" aria-live="polite">
-  <div class="pb-in">
-    <span class="pb-tag">Auckland, New Zealand</span>
-    <div class="pb-name">Pavithra <b>Bamunu</b></div>
-    <div class="pb-rule"></div>
-    <div class="pb-ledger">
-      <div class="pb-row">
-        <span class="pb-n" data-from="0" data-to="14">14</span>
-        <span class="pb-l">years across multi-site retail, <em>New Zealand and Asia</em></span>
-      </div>
-      <div class="pb-row">
-        <span class="pb-n" data-from="8.9" data-to="16.8" data-dec="1" data-pre="$" data-suf="M">$16.8M</span>
-        <span class="pb-l">category peak at Samsung, <em>grown from $8.9M</em></span>
-      </div>
-      <div class="pb-row">
-        <span class="pb-n" data-from="0" data-to="606">606</span>
-        <span class="pb-l">Auckland catchments segmented, <em>516,585 households</em></span>
-      </div>
-      <div class="pb-row">
-        <span class="pb-n" data-from="0" data-to="38">38</span>
-        <span class="pb-l">tests passing in a system that <em>runs, not describes</em></span>
-      </div>
+<div id="pb-boot" role="status" aria-live="polite" aria-label="Loading Pavithra Bamunu's portfolio">
+  <div class="pb-stage" aria-hidden="true">
+    <svg viewBox="0 0 520 520">
+      <defs><linearGradient id="pbg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#5fe1ff"/><stop offset=".6" stop-color="#9b7bff"/><stop offset="1" stop-color="#ff8fd8"/></linearGradient></defs>
+      <g class="pb-r a"><circle cx="260" cy="260" r="250" fill="none" stroke="rgba(95,225,255,.14)"/></g>
+      <g class="pb-r b"><g class="pb-spin"><circle cx="260" cy="260" r="214" fill="none" stroke="url(#pbg)" stroke-width="1.5" stroke-dasharray="120 40 8 40" stroke-linecap="round"/></g></g>
+      <g class="pb-r c"><g class="pb-spin rev"><circle cx="260" cy="260" r="176" fill="none" stroke="rgba(155,123,255,.45)" stroke-dasharray="2 7"/>
+        <circle cx="436" cy="260" r="4" fill="#5fe1ff"/><circle cx="84" cy="260" r="3" fill="#9b7bff"/></g></g>
+      <g class="pb-r d"><circle cx="260" cy="260" r="140" fill="rgba(5,8,14,.6)" stroke="rgba(95,225,255,.22)"/>
+        <path d="M260 120 v14 M260 386 v14 M120 260 h14 M386 260 h14" stroke="#5fe1ff" stroke-width="1.5"/></g>
+    </svg>
+    <div class="pb-mid">
+      <div class="pb-pct"><span id="pb-pct">000</span> % · RESOLVING</div>
+      <div class="pb-name" id="pb-name">Pavithra <b>Bamunu</b></div>
+      <div class="pb-role">Analytics · Auckland · NZ</div>
     </div>
-    <button id="pb-skip" class="pb-skip" type="button">Skip</button>
   </div>
+  <pre class="pb-log" id="pb-log" aria-hidden="true"></pre>
+  <button id="pb-skip" class="pb-skip" type="button">Skip ›</button>
+  <div class="pb-bar" aria-hidden="true"><i></i></div>
 </div>
 
 <div class="wrap">
 
-  <header data-r style="--i:0">
-    <span class="tag">Auckland, New Zealand</span>
-    <h1>Pavithra <b>Bamunu</b></h1>
-    <p class="sub">Fourteen years across multi-site retail in New Zealand and Asia — category P&amp;L, demand forecasting, and the direct leadership of teams up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a contracting core segment. Then I rebuilt here: a First Class Honours Master's in Business Analytics, and a Duty Manager's view of a supermarket floor. I build the tools as well as the analysis — the work below runs, rather than describing what it would do.</p>
-    <div class="who">
-      <span>Customer &amp; business data analytics</span>
-      <span>Category P&amp;L · Demand forecasting · Product management</span>
-      <span>Python · R · SQL · Tableau · Power BI</span>
-      <span>MAppBus (Business Analytics), First Class Honours · MBA · EMPM</span>
-      <span>Duty Manager, Four Square Eden Terrace</span>
+  <header class="hero">
+    <div>
+      <span class="tag" data-rv>Auckland, New Zealand · Customer &amp; business analytics</span>
+      <h1 data-rv style="--i:1">Pavithra <b class="grad">Bamunu</b></h1>
+      <p class="sub" data-rv style="--i:2">Fourteen years across multi-site retail in New Zealand and Asia: category P&amp;L, demand forecasting, and leading teams of up to 120. At Samsung Electronics I grew a television category from $8.9M to a $16.8M peak against a shrinking core segment. Then I rebuilt here, with a First Class Honours Master's in Business Analytics and a Duty Manager's view of a supermarket floor. I build the tools as well as the analysis: the work below runs.</p>
+      <div class="chips" data-rv style="--i:3">
+        <span class="chip">Python · R · SQL</span><span class="chip">Tableau · Power BI</span><span class="chip">Forecasting</span><span class="chip">Category P&amp;L</span><span class="chip">CRISP-DM</span>
+      </div>
+      <div class="cta" data-rv style="--i:4">
+        <a class="btn pri" href="#work">See the work ↓</a>
+        <a class="btn" href="cv.html">CV</a>
+        <a class="btn" href="mailto:pavithrasam.s6@gmail.com">Email</a>
+      </div>
+    </div>
+    <div class="core" data-rv style="--i:2" aria-hidden="true">
+      <svg viewBox="0 0 440 440">
+        <defs><linearGradient id="cg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#5fe1ff"/><stop offset=".6" stop-color="#9b7bff"/><stop offset="1" stop-color="#ff8fd8"/></linearGradient>
+          <radialGradient id="cf"><stop offset="0" stop-color="rgba(95,225,255,.18)"/><stop offset="1" stop-color="rgba(95,225,255,0)"/></radialGradient>
+          <path id="arc" d="M220 220 m-188 0 a188 188 0 1 1 376 0 a188 188 0 1 1 -376 0"/></defs>
+        <circle cx="220" cy="220" r="210" fill="url(#cf)"/>
+        <g class="ring r3"><circle cx="220" cy="220" r="188" fill="none" stroke="rgba(120,190,230,.16)"/>
+          <text class="lbl"><textPath href="#arc">Retail · Category P&amp;L · Forecasting · Customer analytics · Shelly v2.4 · Catchment Mission Fit · </textPath></text></g>
+        <g class="ring r1"><circle cx="220" cy="220" r="158" fill="none" stroke="url(#cg)" stroke-width="1.6" stroke-dasharray="160 50 6 50" stroke-linecap="round"/>
+          <circle cx="378" cy="220" r="5" fill="#5fe1ff"/></g>
+        <g class="ring r2"><circle cx="220" cy="220" r="124" fill="none" stroke="rgba(155,123,255,.45)" stroke-dasharray="2 6"/>
+          <circle cx="96" cy="220" r="4" fill="#9b7bff"/><circle cx="220" cy="96" r="3" fill="#5ff2c3"/></g>
+        <circle cx="220" cy="220" r="86" fill="rgba(8,13,22,.85)" stroke="rgba(95,225,255,.3)"/>
+        <text x="220" y="236" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="44" font-weight="600" fill="#eef4fa" letter-spacing="2">PB</text>
+      </svg>
+      <div class="status">
+        <div class="row"><span class="k">Now</span><span><span class="live"></span><b>Duty Manager</b>, Four Square Eden Terrace</span></div>
+        <div class="row"><span class="k">Next</span><span>Customer &amp; business <b>data analytics</b> in Auckland</span></div>
+        <div class="row"><span class="k">Building</span><span><b>Shelly v2.4</b>, an analytics agent</span></div>
+      </div>
     </div>
   </header>
 
-  <section data-r style="--i:1">
-    <h2>Selected work</h2>
+  <section aria-labelledby="h-rec">
+    <div class="sh" data-rv><span class="ix">01</span><h2 id="h-rec">The record</h2><span class="ln"></span></div>
+    <div class="ledger">
+      <div class="metric" data-rv style="--i:0"><div class="n" data-count="14">14</div><div class="l">years in multi-site retail, <em>New Zealand and Asia</em></div></div>
+      <div class="metric" data-rv style="--i:1"><div class="n" data-count="16.8" data-dec="1" data-pre="$" data-suf="M">$16.8M</div><div class="l">category peak at Samsung, <em>grown from $8.9M</em></div></div>
+      <div class="metric" data-rv style="--i:2"><div class="n" data-count="606">606</div><div class="l">Auckland catchments segmented, <em>516,585 households</em></div></div>
+      <div class="metric" data-rv style="--i:3"><div class="n" data-count="131">131</div><div class="l">automated tests passing in Shelly, <em>a system that runs</em></div></div>
+    </div>
+  </section>
+
+  <section id="work" aria-labelledby="h-work">
+    <div class="sh" data-rv><span class="ix">02</span><h2 id="h-work">Selected work</h2><span class="ln"></span></div>
     <div class="work">
 
-      <a class="item" data-r style="--i:2" href="https://pavi44m.github.io/Agent-Shelly-0.3/" target="_blank" rel="noopener">
-        <span class="k">working system · v1.1 · python, r, sql</span>
-        <span class="t">Shelly — analytics agent</span>
-        <span class="d">A CRISP-DM pipeline that turns a week of POS, stock and waste data into what happened, what's wrong, and what to do today — then writes the report an analyst would have written. Ask for a budget or a 13-week forecast in plain words and it builds the workbook: Dashboard, live formulas, a real PivotTable, and an Assumptions sheet where changing one blue cell recalculates everything. Twenty-four skills across six industry packs, and a second module for a medical importer.</span>
-        <span class="m"><span>clone → install → runs in 23 seconds</span><span>38 tests passing, CI green</span><span>11 report types · 0 formula errors</span><span>synthetic data only</span></span>
+      <a class="card wide" data-spot data-rv href="https://pavi44m.github.io/Agent-Shelly-0.3/" target="_blank" rel="noopener">
+        <span class="go" aria-hidden="true">↗</span>
+        <div class="feat">
+          <div>
+            <span class="k">Working system · v2.4 · Python, R, SQL, JavaScript</span>
+            <span class="t">Shelly, an analytics agent for four businesses</span>
+            <span class="d">One brain running a neighbourhood store, a medical importer, a 3PL warehouse and a head-office tower, all on synthetic data. A week of POS, stock and waste becomes what happened, what's wrong and what to do today. Forecasts are checked honestly against days they never saw, departments agree one plan for one sign-off, every agent works inside a limit the owner sets, and you can just ask it a question, typed or spoken.</span>
+            <span class="m"><span>CRISP-DM pipeline</span><span>Excel with live formulas</span><span>event bus + SQLite model</span><span>synthetic data only</span></span>
+          </div>
+          <div class="stats" aria-label="Shelly in numbers">
+            <div><b>68</b><small>agents in 8 departments</small></div>
+            <div><b>60+</b><small>skills in 12 industry packs</small></div>
+            <div><b>131</b><small>tests passing</small></div>
+            <div><b>4</b><small>businesses, one brain</small></div>
+          </div>
+        </div>
       </a>
 
-      <a class="item" data-r style="--i:3" href="catchment-slab.html">
-        <span class="k">interactive study · 2026</span>
+      <a class="card" data-spot data-rv style="--i:1" href="catchment-slab.html">
+        <span class="go" aria-hidden="true">→</span>
+        <span class="k">Interactive study · 2026</span>
         <span class="t">Catchment Mission Fit</span>
-        <span class="d">Do store formats match the shoppers who actually live around them? 606 Auckland catchments segmented by the shopper mission their household composition implies, overlaid on the public store network. Twenty-two catchments come back mismatched — and one expected finding turns out to be wrong.</span>
-        <span class="m"><span>K-means · PCA · bootstrap validation</span><span>Census 2023 · HES · OpenStreetMap</span><span>public data only</span></span>
+        <span class="d">Do store formats match the shoppers who live around them? 606 Auckland catchments segmented by the shopping mission their households imply, laid over the public store network. Twenty-two come back mismatched, and one expected finding turns out to be wrong.</span>
+        <span class="m"><span>K-means · PCA · bootstrap</span><span>Census 2023 · HES · OSM</span><span>public data only</span></span>
       </a>
 
-      <a class="item" data-r style="--i:4" href="method.html">
-        <span class="k">the working</span>
+      <a class="card" data-spot data-rv style="--i:2" href="catchment-command.html">
+        <span class="go" aria-hidden="true">→</span>
+        <span class="k">Dashboard</span>
+        <span class="t">Catchment Command</span>
+        <span class="d">The same model laid out conventionally: map, segment profiles, distance matrix, a flagged shortlist and a live sensitivity model, all on one screen for a reader with four minutes.</span>
+        <span class="m"><span>606 catchments · 146 stores</span><span>colour-vision checked</span></span>
+      </a>
+
+      <a class="card wide" data-spot data-rv style="--i:3" href="method.html">
+        <span class="go" aria-hidden="true">→</span>
+        <span class="k">The working</span>
         <span class="t">Tool output, end to end</span>
-        <span class="d">The Python, R, SQL and Excel results behind that study — including the query set that has no data to run against, executed against a documented schema to prove it is valid rather than pretending otherwise.</span>
+        <span class="d">The Python, R, SQL and Excel results behind the study, including a query set with no data to run against, executed against a documented schema to prove it is valid rather than pretending otherwise.</span>
         <span class="m"><span>scripts and console output</span><span>four data defects, all disclosed</span></span>
       </a>
-
-      <a class="item" data-r style="--i:5" href="catchment-command.html">
-        <span class="k">dashboard</span>
-        <span class="t">Catchment Command</span>
-        <span class="d">The same model laid out conventionally — map, segment profiles, distance matrix, flagged shortlist and a live sensitivity model, all visible at once for a reader with four minutes.</span>
-        <span class="m"><span>606 catchments · 146 stores</span><span>colour-vision validated</span></span>
-      </a>
-
     </div>
   </section>
 
-  <section data-r style="--i:6">
-    <h2>What the catchment study found</h2>
+  <section aria-labelledby="h-find">
+    <div class="sh" data-rv><span class="ix">03</span><h2 id="h-find">What the catchment study found</h2><span class="ln"></span></div>
     <div class="facts">
-      <div class="fact"><div class="n">606</div><div class="l">catchments analysed</div></div>
-      <div class="fact"><div class="n">516,585</div><div class="l">households covered</div></div>
-      <div class="fact"><div class="n">22</div><div class="l">format-to-mission mismatches</div></div>
-      <div class="fact"><div class="n">27×</div><div class="l">bigger lever than the one it set out to find</div></div>
+      <div class="metric" data-rv style="--i:0"><div class="n">606</div><div class="l">catchments analysed</div></div>
+      <div class="metric" data-rv style="--i:1"><div class="n">516,585</div><div class="l">households covered</div></div>
+      <div class="metric" data-rv style="--i:2"><div class="n">22</div><div class="l">format-to-mission mismatches</div></div>
+      <div class="metric" data-rv style="--i:3"><div class="n">27×</div><div class="l">a bigger lever than the one it set out to find</div></div>
     </div>
-    <p class="note" style="margin-top:20px">The headline is that fifteen inner-city catchments have <b>51.9% of households without a motor vehicle</b>, and eight of those have no convenience-format store within a walkable kilometre while a competitor sits closer. The more useful finding came from reading the co-operative's published accounts: at a 3.17% margin the recapture opportunity is worth about $0.46m, while allocating $254m of annual capital 5% better is worth around $12.7m. The catchment gaps are not the prize — they are the evidence the method finds things.</p>
+    <p class="note" data-rv style="margin-top:22px">Fifteen inner-city catchments have <b>51.9% of households without a motor vehicle</b>, and eight of those have no convenience-format store within a walkable kilometre while a competitor sits closer. The more useful finding came from the co-operative's published accounts: at a 3.17% margin the recapture opportunity is worth about $0.46m, while allocating $254m of annual capital 5% better is worth around $12.7m. The catchment gaps are not the prize; they are the evidence that the method finds things.</p>
   </section>
 
-  <section data-r style="--i:7">
-    <h2>Background</h2>
-    <div class="work">
-      <a class="item" data-r style="--i:8" href="cv.html">
-        <span class="k">curriculum vitae</span>
-        <span class="t">Fourteen years, filtered by what you need</span>
-        <span class="d">Pick a capability — forecasting, category P&amp;L, analytics, leadership — and only the roles that demonstrate it stay lit, with the evidence inside them marked. Downloadable as PDF or Word.</span>
-        <span class="m"><span>Samsung · Orel · Ceylon Business Appliances</span><span>NZ and Asia</span></span>
-      </a>
+  <section aria-labelledby="h-path">
+    <div class="sh" data-rv><span class="ix">04</span><h2 id="h-path">Trajectory</h2><span class="ln"></span></div>
+    <div class="path">
+      <div class="stop" data-rv><span class="w">Asia · Samsung Electronics</span><b>Product management and B2B enterprise sales</b><p>Grew a television category from $8.9M to a $16.8M peak against a contracting core segment.</p></div>
+      <div class="stop" data-rv style="--i:1"><span class="w">Asia · Ceylon Business Appliances · Orel Corporation</span><b>Senior management, multi-site retail</b><p>Category P&amp;L, demand forecasting, and direct leadership of teams of up to 120.</p></div>
+      <div class="stop" data-rv style="--i:2"><span class="w">Auckland · Unitec</span><b>Master of Applied Business (Business Analytics), First Class Honours</b><p>Alongside an MBA (International Business) and an Executive Master of Project Management.</p></div>
+      <div class="stop" data-rv style="--i:3"><span class="w">Auckland · Four Square Eden Terrace</span><b>Duty Manager</b><p>Licensed Duty Manager: the operator's view of the trade the data describes.</p></div>
+      <div class="stop next" data-rv style="--i:4"><span class="w">Next</span><b>Customer and business data analytics, Auckland</b><p>Bringing the operator's view, the commercial record and working tools to an analytics team.</p></div>
     </div>
   </section>
 
-  <section data-r style="--i:9">
-    <h2>Files and method</h2>
-    <p class="note">Every figure traces to a named script and a named source file. The full pipeline — scripts, intermediate data, outputs, logs and the written study — is re-runnable end to end and available on request. Shelly is public on GitHub and runs from a clean clone.</p>
-    <p class="note" style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No employer data of any kind appears in any of this work, in raw, aggregated or anonymised form. The catchment study is built entirely on public sources; Shelly ships with synthetic demo data and a warning to check your employment agreement before pointing it at anything real.</p>
+  <section aria-labelledby="h-method">
+    <div class="sh" data-rv><span class="ix">05</span><h2 id="h-method">Files and method</h2><span class="ln"></span></div>
+    <p class="note" data-rv>Every figure traces to a named script and a named source file. The catchment pipeline (scripts, intermediate data, outputs, logs and the written study) re-runs end to end and is available on request. Shelly is public on GitHub and runs from a clean clone.</p>
+    <p class="note" data-rv style="margin-top:14px"><b>Data boundary.</b> I work in a Foodstuffs banner store. No employer data of any kind appears in this work, in raw, aggregated or anonymised form. The catchment study uses public sources only; Shelly ships with synthetic demo data.</p>
   </section>
 
-  <footer data-r style="--i:10">
-    <span>Pavithra Bamunu · Auckland</span>
-    <span><a href="mailto:pavithrasam.s6@gmail.com">pavithrasam.s6@gmail.com</a></span>
+  <div class="contact" data-rv>
+    <span class="tag">Open to analytics roles in Auckland</span>
+    <h2>Let's talk about <span class="grad">your data.</span></h2>
+    <p class="note" style="margin:0 auto">Customer analytics, category and commercial analysis, forecasting, or building the tool your team keeps asking for.</p>
+    <div class="cta">
+      <a class="btn pri" href="mailto:pavithrasam.s6@gmail.com">pavithrasam.s6@gmail.com</a>
+      <a class="btn" href="Pavithra_Bamunu_CV_Master.pdf" download>CV · PDF</a>
+      <a class="btn" href="Pavithra_Bamunu_CV_Master.docx" download>CV · Word</a>
+    </div>
+  </div>
+
+  <footer>
+    <span>Pavithra Bamunu · Auckland, New Zealand</span>
+    <span><a href="https://github.com/Pavi44M">github.com/Pavi44M</a></span>
   </footer>
-
 </div>
 
 <script>
-/* Opening sequence. The page reveals itself on CSS timers regardless of what
-   happens in here; this only shortens those timers and animates the counters. */
-(function(){
+/* Opening sequence + reveal. The page is complete without any of this. */
+(function () {
   "use strict";
-  var box = document.getElementById("pb-boot");
-  if(!box) return;
-  var root = document.documentElement, done = false;
-
-  function finish(){
-    if(done) return; done = true;
-    box.classList.add("pb-done");
-    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 450);
-  }
-
+  var root = document.documentElement, box = document.getElementById("pb-boot");
   var still = false, seen = false;
-  try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
-  try { seen = sessionStorage.getItem("pb.seen") === "1"; sessionStorage.setItem("pb.seen","1"); } catch(e){}
+  try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  try { seen = sessionStorage.getItem("pb.seen") === "1"; sessionStorage.setItem("pb.seen", "1"); } catch (e) {}
 
-  /* Seen it already this session, or motion is unwelcome: land the page
-     almost immediately rather than making the same person wait twice. */
-  function shortcut(ms){
-    root.style.setProperty("--rb", ms + "ms");
-    box.querySelectorAll(".pb-n").forEach(function(n){ n.textContent = render(n, +n.dataset.to); });
-    setTimeout(finish, ms);
+  /* reveal on scroll */
+  if ("IntersectionObserver" in window && !still) {
+    root.classList.add("rv");
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }); }, { rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll("[data-rv]").forEach(function (el) { io.observe(el); });
+    setTimeout(function () { document.querySelectorAll("[data-rv]").forEach(function (el) { var r = el.getBoundingClientRect(); if (r.top < innerHeight) el.classList.add("in"); }); }, 7200);
+  }
+  /* numbers count up once, when first seen */
+  function fmt(el, v) { var d = +(el.dataset.dec || 0); return (el.dataset.pre || "") + v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (el.dataset.suf || ""); }
+  if ("IntersectionObserver" in window && !still) {
+    var co = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return; co.unobserve(e.target);
+        var el = e.target, to = +el.dataset.count, t0 = null;
+        (function f(ts) { if (t0 === null) t0 = ts; var p = Math.min(1, (ts - t0) / 1100), k = p === 1 ? 1 : 1 - Math.pow(2, -10 * p); el.textContent = fmt(el, to * k); if (p < 1) requestAnimationFrame(f); })(performance.now());
+      });
+    }, { threshold: .6 });
+    document.querySelectorAll("[data-count]").forEach(function (el) { co.observe(el); });
   }
 
-  function render(el, v){
-    var d = +(el.dataset.dec || 0);
-    return (el.dataset.pre || "") +
-           v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
-           (el.dataset.suf || "");
-  }
+  if (!box) return;
+  var done = false;
+  function finish() { if (done) return; done = true; box.classList.add("pb-done"); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 800); }
+  document.getElementById("pb-skip").addEventListener("click", finish);
+  document.addEventListener("keydown", function (e) { if (!done && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) finish(); });
+  if (still || seen) { setTimeout(finish, still ? 150 : 450); return; }
 
-  if(still || seen){ shortcut(seen && !still ? 260 : 120); return; }
+  /* the log states the record as the rings spin up */
+  var LOG = [
+    ["› boot pb-os · auckland node", 150],
+    ["› record: 14 years · multi-site retail · NZ + Asia", 420],
+    ["› samsung tv category $8.9M → $16.8M ........ ok", 760],
+    ["› catchments 606 · households 516,585 ....... ok", 1080],
+    ["› shelly v2.4 · 68 agents · 131 tests ...... ok", 1400],
+    ["› identity resolved", 1880]
+  ];
+  var log = document.getElementById("pb-log");
+  LOG.forEach(function (l) { setTimeout(function () { if (done) return; log.innerHTML += l[0].replace(/ok$/, '<span class="ok">ok</span>') + "\n"; }, l[1]); });
 
-  /* Counters. easeOutExpo so each figure decelerates into its real value
-     instead of ticking at a constant, mechanical rate. */
-  var START = 300, DUR = 850;
-  box.querySelectorAll(".pb-n").forEach(function(el, i){
-    var from = +el.dataset.from, to = +el.dataset.to, t0 = null, delay = START + i * 110;
-    el.textContent = render(el, from);
-    function frame(ts){
-      if(t0 === null) t0 = ts;
-      var p = Math.min(1, (ts - t0) / DUR);
-      var e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
-      el.textContent = render(el, from + (to - from) * e);
-      if(p < 1) requestAnimationFrame(frame); else el.textContent = render(el, to);
-    }
-    setTimeout(function(){ requestAnimationFrame(frame); }, delay);
-  });
+  /* percentage */
+  var pct = document.getElementById("pb-pct"), T = 2300, s0 = performance.now();
+  (function p(ts) { var k = Math.min(1, (ts - s0) / T); pct.textContent = String(Math.round(k * 100)).padStart(3, "0"); if (k < 1 && !done) requestAnimationFrame(p); })(s0);
 
-  function skip(){ if(!done) shortcut(140); }
-  document.getElementById("pb-skip").addEventListener("click", skip);
-  box.addEventListener("click", skip);
-  document.addEventListener("keydown", function(e){
-    if(!done && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip();
-  });
+  /* the name decodes out of noise */
+  var name = document.getElementById("pb-name"), A = "Pavithra ", B = "Bamunu", G = "▓▒░<>/\\|=+*#%01ΛΣΞ", D0 = 300, D = 1500;
+  function scr(str, k) { var out = ""; for (var i = 0; i < str.length; i++) out += (str[i] === " " || i / str.length < k) ? str[i] : G[(Math.random() * G.length) | 0]; return out; }
+  (function dec(ts) {
+    var k = Math.max(0, Math.min(1, (ts - s0 - D0) / D));
+    name.innerHTML = scr(A, k).replace(/[<>&]/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]; }) + "<b>" + scr(B, Math.max(0, k * 1.15 - .15)).replace(/[<>&]/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]; }) + "</b>";
+    if (k < 1 && !done) requestAnimationFrame(dec); else name.innerHTML = "Pavithra <b>Bamunu</b>";
+  })(s0);
 
-  setTimeout(finish, 1650);
+  setTimeout(finish, 2650);
 })();
 </script>
+<script src="assets/hud.js" defer></script>
 </body>
 </html>
