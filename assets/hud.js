@@ -3,7 +3,7 @@
   "use strict";
   var doc = document, root = doc.documentElement, here = (location.pathname.split("/").pop() || "index.html");
   var still = false; try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-  var LINKS = [["index.html", "Work"], ["catchment-slab.html", "Study"], ["method.html", "Method"], ["catchment-command.html", "Dashboard"], ["cv.html", "CV"],
+  var LINKS = [["index.html", "Work"], ["case-study.html", "Case study"], ["catchment-slab.html", "Study"], ["method.html", "Method"], ["catchment-command.html", "Dashboard"], ["cv.html", "CV"],
                ["https://pavi44m.github.io/Agent-Shelly-0.3/", "Shelly ↗"]];
 
   /* ---- heads-up bar */

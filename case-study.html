@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Was the promo worth it? · Pavithra Bamunu</title>
+<meta name="author" content="Pavithra Bamunu">
+<meta name="description" content="A five-minute commercial analytics case study: 317 grocery promotions scored against their baseline, net of cannibalisation and the after-promo dip, with a discount depth model and basket analysis. Built in Shelly on synthetic data.">
+<meta name="theme-color" content="#05080e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="assets/hud.css">
+<noscript><style>.step{display:block}.nav,.steps,.prog{display:none}</style></noscript>
+<style>
+:root{color-scheme:dark;--ink:#eef4fa;--ink-2:#b4c0ce;--ink-3:#7f8da0;--accent:#5fe1ff;--mint:#5ff2c3;--red:#ff8a7a;--mono:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box}
+body{margin:0;padding:0 20px 80px;color:var(--ink-2);font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1}
+a{color:var(--accent)}
+.tag{font:500 10.5px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3)}
+header{padding:64px 0 10px}
+h1{font-size:clamp(36px,6.5vw,68px);font-weight:200;letter-spacing:-.04em;line-height:1;margin:16px 0 0;color:var(--ink)}
+h1 b{font-weight:600;background:linear-gradient(100deg,#5fe1ff,#9b7bff 60%,#ff8fd8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:clamp(16px,2.1vw,19px);margin:20px 0 0;max-width:62ch}
+.answer{margin:28px 0 0;padding:20px 22px;border-radius:18px;border:1px solid var(--hud-line-2);background:rgba(12,19,30,.7);backdrop-filter:blur(10px)}
+.answer b{color:var(--ink)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.meta span{font:500 11px var(--mono);padding:6px 11px;border-radius:99px;border:1px solid var(--hud-line);color:var(--ink-2)}
+/* the stepper: six CRISP-DM steps, one at a time */
+.steps{display:flex;gap:6px;margin:44px 0 0;overflow-x:auto;scrollbar-width:none}.steps::-webkit-scrollbar{display:none}
+.steps button{flex:1;min-width:120px;text-align:left;background:rgba(12,19,30,.6);border:1px solid var(--hud-line);border-radius:12px;padding:10px 12px;color:var(--ink-3);font:500 11px var(--mono);letter-spacing:.06em;cursor:pointer}
+.steps button b{display:block;font:600 13.5px "Plus Jakarta Sans",sans-serif;color:var(--ink-2);letter-spacing:0;margin-top:2px}
+.steps button[aria-current="step"]{border-color:var(--accent);background:rgba(95,225,255,.08)}.steps button[aria-current="step"] b{color:var(--ink)}
+.prog{height:2px;background:rgba(95,225,255,.12);margin:10px 0 0;border-radius:2px;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,#5fe1ff,#9b7bff);transition:width .4s}
+.step{display:none;margin-top:22px;padding:26px 24px;border-radius:20px;border:1px solid var(--hud-line);background:linear-gradient(165deg,rgba(18,28,42,.82),rgba(12,19,30,.62));backdrop-filter:blur(10px)}
+.step.on{display:block;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.step h2{font-size:clamp(22px,3.4vw,30px);font-weight:400;letter-spacing:-.02em;color:var(--ink);margin:0 0 12px}
+.step h3{font:600 11px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:22px 0 8px}
+.step ul{margin:0;padding-left:20px}.step li{margin:0 0 8px}.step li b{color:var(--ink)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+.nav button{background:rgba(18,28,42,.7);border:1px solid var(--hud-line-2);color:var(--ink);border-radius:12px;padding:11px 18px;font:600 12px var(--mono);letter-spacing:.06em;cursor:pointer}
+.nav button.pri{background:linear-gradient(100deg,#5fe1ff,#9b7bff);color:#05080e;border:0}
+.nav button:disabled{opacity:.35;cursor:default}
+/* the margin bridge */
+.bridge{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:end;height:220px;margin:16px 0 8px;padding:0 4px;border-bottom:1px solid #3d4a5c}
+.bridge div{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.bridge i{display:block;border-radius:6px 6px 0 0;opacity:.85}.bridge .g{background:var(--mint)}.bridge .r{background:var(--red)}.bridge .n{background:#9aa6b6}
+.bridge b{font:600 13px var(--mono);color:var(--ink);text-align:center;margin-bottom:6px}
+.bl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;font-size:12px;text-align:center;color:var(--ink-3);line-height:1.35}
+.code{font:12.5px/1.6 var(--mono);background:#05080e;border:1px solid var(--hud-line);border-radius:12px;padding:14px 16px;overflow-x:auto;color:#cfe6f2;white-space:pre}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}.kv div{padding:14px;border-radius:14px;border:1px solid var(--hud-line);background:rgba(5,8,14,.5)}
+.kv b{display:block;font:500 22px var(--mono);color:var(--ink)}.kv span{font-size:12.5px;color:var(--ink-3)}
+footer{margin-top:44px;font:500 11px var(--mono);color:var(--ink-3);display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
+@media (max-width:620px){.kv{grid-template-columns:1fr 1fr}.bridge{height:180px;gap:6px}.bl{gap:6px;font-size:11px}.step{padding:20px 16px}}
+@media (prefers-reduced-motion:reduce){.step.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="tag">Case study · commercial analytics · five minutes</span>
+  <h1>Was the promo <b>worth it?</b></h1>
+  <p class="sub">Every grocery store runs promotions. Fewer check whether they made money. I took two years of store data, scored all 317 promotions against what each line would have sold anyway, and followed the margin all the way through.</p>
+  <div class="answer"><b>The answer:</b> shoppers bought <b>47% more</b> on promotion, but only <b>5% of promos paid their way</b>. Over two years they cost <b>$10,154 of margin</b>, and the biggest cost was not the extra units: it was the <b>$8,934 discount</b> given on units that would have sold at full price anyway.</div>
+  <div class="meta"><span>Python · pandas</span><span>baseline modelling</span><span>cannibalisation</span><span>price response</span><span>basket analysis</span><span>CRISP-DM</span><span>synthetic data</span></div>
+</header>
+
+<nav class="steps" id="steps" aria-label="Case study steps"></nav>
+<div class="prog" aria-hidden="true"><i id="prog"></i></div>
+
+<section class="step" data-t="Business">
+  <h2>1 · The question behind the question</h2>
+  <p>A store owner asks "how did the promo go?" and usually hears "we sold heaps". Units are the wrong scoreboard. The real question is: <b>did this promotion leave the store with more margin than not running it?</b></p>
+  <h3>Who needs the answer</h3>
+  <ul><li><b>The owner:</b> which promos to keep, change or stop.</li><li><b>The category manager:</b> how deep to discount, and which lines sit together.</li><li><b>The supplier conversation:</b> how much funding a promo needs before the store agrees to it.</li></ul>
+  <h3>What success looks like</h3>
+  <p>A keep, change or stop call for every line, a funding ask for the supplier, and a weekly short list of actions, all traceable to the numbers.</p>
+</section>
+
+<section class="step" data-t="Data">
+  <h2>2 · What the data could and couldn't say</h2>
+  <div class="kv"><div><b>68,829</b><span>daily sales rows by line and channel</span></div><div><b>50</b><span>lines in 11 categories</span></div><div><b>317</b><span>in-store promos, ~3 days at ~20% off</span></div></div>
+  <h3>What I checked first</h3>
+  <ul><li>Some lines had <b>more than one row per day</b>: aggregated before anything else.</li><li>Days with no sales had <b>no row at all</b>: I built the full grid of every line on every day, so a zero is a zero, not a gap.</li><li>The data has <b>daily totals, not till receipts</b>. That limits what can be said about baskets, and the study says so.</li></ul>
+</section>
+
+<section class="step" data-t="Baseline">
+  <h2>3 · The baseline: what would have sold anyway</h2>
+  <p>Everything hinges on the counterfactual. For each promo day, the baseline is the <b>average units on the same weekday over the four weeks before</b>, with promo days left out, so one promotion can't inflate the next one's baseline.</p>
+  <div class="code">baseline = units.where(promo == 0)          # promo days don't count
+                .shift(1)                    # only the weeks before
+                .rolling(4, min_periods=2)   # four same weekdays
+                .mean()                      # per line, per weekday</div>
+  <p>Both actual and baseline margin use the same list unit cost, so the comparison is like for like.</p>
+</section>
+
+<section class="step" data-t="Model">
+  <h2>4 · Following the margin all the way through</h2>
+  <p>Each promotion's result splits into four parts. Added up across all 317:</p>
+  <div class="bridge" aria-label="Margin bridge across 317 promotions">
+    <div><b>+$4,103</b><i class="g" style="height:31%"></i></div>
+    <div><b>−$8,934</b><i class="r" style="height:67%"></i></div>
+    <div><b>−$3,551</b><i class="r" style="height:27%"></i></div>
+    <div><b>−$1,773</b><i class="r" style="height:13%"></i></div>
+    <div><b>−$10,154</b><i class="n" style="height:76%"></i></div>
+  </div>
+  <div class="bl"><span>Margin on the extra units</span><span>Discount on units that would have sold anyway</span><span>Taken from other lines in the category</span><span>The dip in the 3 days after</span><span><b style="color:var(--ink)">Net</b></span></div>
+  <h3>Why it loses</h3>
+  <p>A 20% discount on a line with about 27% margin leaves about 9% margin per unit. To stand still, the promo needs roughly three times the usual sales. It got 1.47 times.</p>
+  <h3>Two more models</h3>
+  <ul><li><b>Discount depth:</b> each line's promo response from its own history, the margin a day at 5% to 30% off, and the share of the discount a supplier must fund to break even (for Craft Beer 6pk, 88%).</li>
+  <li><b>What sells together:</b> support, confidence and lift on baskets. Because the data has no receipts, baskets were <b>simulated</b> from shopping missions and labelled that way: the method is real, the pairs are illustrative.</li></ul>
+</section>
+
+<section class="step" data-t="Evaluate">
+  <h2>5 · How I know the numbers hold</h2>
+  <ul><li><b>Every promo nets out exactly:</b> the four parts add to its net, checked by an automated test on all 317.</li>
+  <li><b>Totals tie:</b> line, category and store totals agree to the dollar.</li>
+  <li><b>The depth model behaves:</b> deeper discounts always sell more units, never fewer.</li>
+  <li><b>Privacy:</b> no basket links to a person, card or loyalty number, also checked by a test.</li></ul>
+  <h3>What it can't tell you yet</h3>
+  <ul><li>No <b>supplier funding</b> data: a funded promo can be worth it even when this says it isn't.</li><li>Promo response mixes <b>price and display</b>; a clean price elasticity needs price tests without the end-cap.</li><li>Real <b>till receipts</b> would replace the simulated baskets.</li></ul>
+</section>
+
+<section class="step" data-t="Deploy">
+  <h2>6 · From analysis to Monday morning</h2>
+  <p>The model runs inside Shelly, my open-source analytics agent, so the answer is a working tool, not a slide:</p>
+  <ul><li>A <b>Commercial lab</b> page: the margin bridge, every line's keep, shallower or stop call, a discount slider and the supplier funding ask.</li>
+  <li>The <b>Store Floor</b>: tap a shelf to see its lines' promo verdicts and what they sell with.</li>
+  <li>Ask Shelly <b>"are our promos worth it?"</b> and get the number with a link to the evidence.</li></ul>
+  <h3>This week's actions it produced</h3>
+  <ul><li>Craft Beer 6pk: 7 promos lost $648. Go shallower, or ask the supplier to fund 88% of the discount.</li>
+  <li>Put Salsa beside Taco Kit: they sell together 11.75 times more than chance (simulated baskets).</li>
+  <li>Dinner-tonight shoppers are 18.5% of baskets but 36.9% of sales: make the meal bay the first thing they see after 4 pm.</li></ul>
+  <h3>With real data, next</h3>
+  <p>Add supplier funding, run promotions as a simple test (alternate weeks or stores) to measure lift cleanly, and use real receipts for baskets.</p>
+  <p style="margin-top:18px"><a href="https://pavi44m.github.io/Agent-Shelly-0.3/commercial/" target="_blank" rel="noopener">Open the Commercial lab in Shelly ↗</a> · <a href="https://github.com/Pavi44M/Agent-Shelly-0.3" target="_blank" rel="noopener">Source on GitHub ↗</a></p>
+</section>
+
+<div class="nav"><button type="button" id="back">← Back</button><button type="button" class="pri" id="next">Next →</button></div>
+
+<footer><span>Pavithra Bamunu · Auckland</span><span>Synthetic store data · no employer data of any kind</span><span><a href="index.html">← Portfolio</a></span></footer>
+</div>
+<script>
+(function(){
+  "use strict";
+  var S=[].slice.call(document.querySelectorAll(".step")), nav=document.getElementById("steps"), i=0;
+  nav.innerHTML=S.map(function(s,k){return '<button type="button" data-k="'+k+'">Step '+(k+1)+'<b>'+s.getAttribute("data-t")+'</b></button>';}).join("");
+  function show(k){ i=Math.max(0,Math.min(S.length-1,k));
+    S.forEach(function(s,j){s.classList.toggle("on",j===i);});
+    [].forEach.call(nav.children,function(b,j){ if(j===i){b.setAttribute("aria-current","step");} else {b.removeAttribute("aria-current");} });
+    document.getElementById("prog").style.width=((i+1)/S.length*100)+"%";
+    document.getElementById("back").disabled=i===0;
+    document.getElementById("next").textContent=i===S.length-1?"Start again ↺":"Next →";
+    try{history.replaceState(null,"","#step-"+(i+1));}catch(e){}
+  }
+  nav.addEventListener("click",function(e){var b=e.target.closest("[data-k]"); if(b) show(+b.getAttribute("data-k"));});
+  document.getElementById("next").onclick=function(){ show(i===S.length-1?0:i+1); nav.scrollIntoView({behavior:"smooth",block:"start"}); };
+  document.getElementById("back").onclick=function(){ show(i-1); };
+  document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight") show(i+1); if(e.key==="ArrowLeft") show(i-1); });
+  var m=location.hash.match(/step-(\d)/); show(m?+m[1]-1:0);
+})();
+</script>
+<script src="assets/hud.js" defer></script>
+</body>
+</html>
