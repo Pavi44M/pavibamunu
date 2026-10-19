@@ -291,11 +291,11 @@ var CAPS = [
 /* Built work. Same capability tags as the roles, so a filter covers the whole
    page: what I have been paid to do and what I have built sit under one lens. */
 var BUILT = [
- {t:"Shelly — analytics agent (v2.5)", y:"2026",
+ {t:"Shelly — analytics agent (v2.6.1)", y:"2026",
   w:"Open source · Python, SQL, R, JavaScript", href:"https://pavi44m.github.io/Agent-Shelly-0.3/",
   caps:["analytics","forecasting","tooling","pnl","product"],
   d:"An analytics agent running four synthetic businesses on one brain: a neighbourhood store, a medical importer, a 3PL and a head-office tower with a clinic and a hotel. A CRISP-DM pipeline turns POS, stock and waste data into a diagnosis and a ranked action list; five forecasting approaches were benchmarked and SARIMA-X selected at 16.4% WAPE. A commercial lab scored 317 promotions against their baseline, net of cannibalisation and the after-promo dip: shoppers bought 47% more, but only 5% paid their way. The report engine writes the workbook an analyst would have built, with live formulas and a real PivotTable.",
-  m:["66 skills · 4 businesses","140+ automated tests, CI green","promo, price and basket analytics","synthetic data only"]},
+  m:["66 skills · 4 businesses","150 automated tests, CI green","promo, price and basket analytics","synthetic data only"]},
  {t:"Was the promo worth it? (case study)", y:"2026",
   w:"Commercial analytics · five-minute read", href:"case-study.html",
   caps:["analytics","pnl"],
@@ -316,30 +316,30 @@ var BUILT = [
 /* Every bullet carries the capabilities it actually evidences — so the filter
    marks proof, not keywords. */
 var ROLES = [
- {t:"Duty Manager", w:"Four Square Eden Terrace · Auckland", d:"2025 – Present",
+ {t:"Licenced Duty Manager", w:"Four Square Eden Terrace · Auckland", d:"Jun 2026 – Present",
   b:[
-   ["Build and manage weekly staff rosters against forecast trade patterns, matching labour cover to peak demand while holding wage cost within budget", ["forecasting","leadership"]],
-   ["Produce daily and end-of-day reporting on sales, stock movement and hours worked; investigate variances and translate them into ordering, staffing and merchandising decisions", ["analytics","forecasting"]],
-   ["Supervise a team of five to ten across shifts, managing timesheet accuracy, break coverage and daily task allocation", ["leadership"]],
-   ["Operate SAP-based store systems covering inward goods receipting, price maintenance, stock counts and product recall handling", ["systems"]],
+   ["Run daily and ad-hoc cycle stock counts and investigate negative-SKU exceptions in SAP, mapping collected SKU data to shelf location by scan — the checks that surface stock-accuracy errors before they reach replenishment", ["analytics","systems"]],
+   ["Operate SAP store systems every shift across article, product and vendor information — inward goods receipting against purchase orders, SKU ranging and product listing and delisting, stock actuals updates, price and promotion maintenance and verification, electronic shelf label management, and product recall handling checked against GTIN and production date", ["systems"]],
+   ["Monitor Four Square Now online order flow and food-safety dashboard levels (Safety Food Pro) through the shift", ["systems"]],
+   ["Supervise five to ten people on shift — task allocation, break coverage, and closing the store without exceptions", ["leadership"]],
    ["Hold the New Zealand Manager's Certificate; accountable for licensed-premises and food safety compliance on shift", ["systems"]]
   ]},
- {t:"Supply Chain Data Analyst <span style='opacity:.6;font-weight:400'>(Internship)</span>", w:"USL Medical · Auckland", d:"Mar – Jun 2025",
+ {t:"Supply Chain Data Analyst <span style='opacity:.6;font-weight:400'>(Internship)</span>", w:"USL Medical · Auckland", d:"Feb – Jul 2025",
   b:[
    ["Performed data integration and vendor mapping across procurement and warehouse systems using SQL and advanced Excel, improving cross-functional visibility for operational decision-making", ["analytics","systems","tooling"]],
-   ["Delivered GS1 compliance assurance across 25,000+ product SKUs, validating data accuracy and identifying systemic quality risk", ["analytics","systems"]]
+   ["Delivered GS1 compliance assurance across 1,000+ product SKUs, validating data accuracy and identifying systemic quality risk", ["analytics","systems"]]
   ]},
- {t:"Operations Support", w:"Manawa Bay Premium Outlet Centre (PPCS) · Auckland", d:"Nov 2024 – Sep 2025",
+ {t:"Operations Maintenance Support", w:"Mānawa Bay Premium Outlet Centre (PPCS) · Part-time · Auckland", d:"Dec 2024 – Aug 2025",
   b:[
-   ["Managed daily inventory checks across 50+ product lines in a high-volume retail precinct serving 500+ customers daily", ["systems"]],
-   ["Reduced waste through stock rotation, maintaining a 100% health and safety compliance record and hygiene audit scores", ["systems"]]
+   ["Managed daily inventory checks and stock rotation across 50+ product lines in a high-volume retail precinct", ["systems"]],
+   ["Maintained cleaning, sanitation and health and safety standards to the centre's audit requirements", ["systems"]]
   ]},
  {t:"Senior Manager — Business Development &amp; Growth", w:"Ceylon Business Appliances · Sri Lanka", d:"Nov 2023 – Jul 2024",
   b:[
    ["Managed full department P&amp;L, budget target setting and KPI reporting, translating financial results into planning recommendations for the executive team", ["pnl","analytics"]],
    ["Led category strategy across B2C and B2B channels, including government and corporate tender engagements", ["pnl","product"]]
   ]},
- {t:"Product Manager — AV Products", w:"Samsung Electronics · Sri Lanka", d:"Mar 2019 – Oct 2023",
+ {t:"Manager, Product Management — AV / Visual Display", w:"Samsung Electronics · Sri Lanka", d:"Mar 2019 – Oct 2023",
   b:[
    ["Grew the television category from $8.9M annual turnover on appointment to a peak of $16.8M in 2022 — against a contracting 32-inch segment, delivering 120% of target for three consecutive years", ["pnl","product"]],
    ["Built Power BI dashboards and SQL-driven reporting used by senior leadership and retail partners to monitor month-end results, category performance and forward demand", ["analytics","forecasting","tooling"]],
@@ -350,7 +350,7 @@ var ROLES = [
  {t:"Business Development Manager — IT &amp; Digital Experience", w:"Orel Corporation · Sri Lanka", d:"Jun 2015 – Nov 2018",
   b:[
    ["Grew the mobile business by over 20% year on year across the full tenure, reaching $0.5M annual turnover in 2018", ["pnl"]],
-   ["Developed a Python-based inventory tracking and warranty management system covering 25,000+ SKUs with just-in-time replenishment logic", ["analytics","systems","tooling"]],
+   ["Developed a Python-based inventory tracking and warranty management system covering 1,000+ SKUs with just-in-time replenishment logic", ["analytics","systems","tooling"]],
    ["Managed IT and digital product categories across retail and online channels, owning category P&amp;L and a team of 25 across sales, technical and support functions", ["pnl","leadership"]],
    ["Delivered a payment gateway platform for iOS and Android, and rolled out QR payment acceptance across 150+ merchants", ["product","tooling"]]
   ]},
@@ -366,7 +366,9 @@ var ROLES = [
 var CERTS = [
  ["<b>Microsoft Power BI Data Analyst</b> Professional Certificate — Microsoft Enterprise", "Nov 2025 – Nov 2027"],
  ["<b>Microsoft PL-300: Power BI Data Analyst</b> — in preparation", "Exam Jan 2027"],
- ["<b>New Zealand Manager's Certificate</b> (Licence Controller Qualification)", "Currently held"],
+ ["<b>New Zealand Manager's Certificate</b> — Auckland Council", "Jun 2026"],
+ ["<b>Licence Controller Qualification</b> (LCQ)", "Mar 2026"],
+ ["<b>Essential First Aid</b> — New Zealand Red Cross", "Aug 2026"],
  ["<b>Agile Project Management &amp; Scrum Methodologies</b> — Project Management Institute", "Jul 2023"],
  ["<b>Product Management Professional Certification</b> — Samsung Electronics", "Sep 2022"],
  ["<b>Explore Emerging Tech Badge</b> — IBM, Credly verified", "Aug 2025"]
